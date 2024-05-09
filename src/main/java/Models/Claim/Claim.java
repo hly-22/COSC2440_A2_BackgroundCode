@@ -123,6 +123,21 @@ public class Claim {
     public int hashCode() {
         return Objects.hash(getFID());
     }
+
+    @Override
+    public String toString() {
+        return "Claim{" +
+                "fID='" + fID + '\'' +
+                ", claimDate=" + claimDate +
+                ", insuredPerson='" + insuredPerson + '\'' +
+                ", cardNumber=" + cardNumber +
+                ", examDate=" + examDate +
+                ", documentList=" + documentList +
+                ", claimAmount=" + claimAmount +
+                ", status=" + status +
+                ", receiverBankingInfo='" + receiverBankingInfo + '\'' +
+                '}';
+    }
 }
 
 enum ClaimStatus {
@@ -180,5 +195,15 @@ class Document {
     public String namingConversion(String fileName) {
         // naming format: fID_fileName_uploadDate.pdf
         return fileName + "_" + ".pdf";
+    }
+
+    @Override
+    public String toString() {
+        return "Document{" +
+                "fileName='" + fileName + '\'' +
+                ", convertFileName='" + convertFileName + '\'' +
+                ", uploadDate=" + uploadDate +
+                ", isPDF=" + isPDF +
+                '}';
     }
 }
