@@ -4,13 +4,21 @@ import Models.Claim.Claim;
 
 import java.util.List;
 
-public class Dependent {
+public class Dependent extends Customer{
     private String policyOwner;
     private String policyHolder;
     private String insuranceCardNumber;
     private List<Claim> claimList;
 
     public Dependent(String policyOwner, String policyHolder, String insuranceCardNumber, List<Claim> claimList) {
+        this.policyOwner = policyOwner;
+        this.policyHolder = policyHolder;
+        this.insuranceCardNumber = insuranceCardNumber;
+        this.claimList = claimList;
+    }
+
+    public Dependent(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory, String policyOwner, String policyHolder, String insuranceCardNumber, List<Claim> claimList) {
+        super(cID, role, fullName, phone, address, email, password, actionHistory);
         this.policyOwner = policyOwner;
         this.policyHolder = policyHolder;
         this.insuranceCardNumber = insuranceCardNumber;
