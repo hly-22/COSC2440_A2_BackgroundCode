@@ -1,4 +1,4 @@
-package Model.SystemAdmin;
+package Models.SystemAdmin;
 
 import java.util.List;
 

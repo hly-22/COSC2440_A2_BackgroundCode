@@ -1,6 +1,6 @@
-package Model.Customer;
+package Models.Customer;
 
-import Model.Claim.Claim;
+import Models.Claim.Claim;
 
 import java.util.List;
 

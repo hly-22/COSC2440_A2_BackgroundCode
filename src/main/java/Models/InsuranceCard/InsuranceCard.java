@@ -1,4 +1,4 @@
-package Model.InsuranceCard;
+package Models.InsuranceCard;
 
 import java.time.LocalDate;
 

@@ -1,6 +1,6 @@
-package Model.Claim;
+package Models.Claim;
 
-import Model.InsuranceCard.InsuranceCard;
+import Models.InsuranceCard.InsuranceCard;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

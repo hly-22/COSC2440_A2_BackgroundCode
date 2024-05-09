@@ -2,9 +2,8 @@
  * @author <Group 13>
  */
 
-package Model.Customer;
+package Models.Customer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Customer {

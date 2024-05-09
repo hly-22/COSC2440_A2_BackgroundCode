@@ -1,4 +1,4 @@
-package Model.Customer;
+package Models.Customer;
 
 import java.math.BigDecimal;
 import java.util.List;

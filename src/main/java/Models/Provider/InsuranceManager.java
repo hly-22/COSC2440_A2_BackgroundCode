@@ -1,4 +1,4 @@
-package Model.Provider;
+package Models.Provider;
 
 import java.util.List;
 
