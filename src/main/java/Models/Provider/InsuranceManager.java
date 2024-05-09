@@ -29,4 +29,12 @@ public class InsuranceManager extends Provider{
     public boolean removeFromSurveyorList(InsuranceSurveyor insuranceSurveyor) {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "InsuranceManager{" +
+                super.toString() +
+                "surveyorList=" + surveyorList +
+                '}';
+    }
 }

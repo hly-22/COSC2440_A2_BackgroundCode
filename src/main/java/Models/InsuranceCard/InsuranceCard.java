@@ -52,4 +52,14 @@ public class InsuranceCard {
     public void setExpirationDate(LocalDate expirationDate) {
         this.expirationDate = expirationDate;
     }
+
+    @Override
+    public String toString() {
+        return "InsuranceCard{" +
+                "cardNumber='" + cardNumber + '\'' +
+                ", cardHolder='" + cardHolder + '\'' +
+                ", policyOwner='" + policyOwner + '\'' +
+                ", expirationDate=" + expirationDate +
+                '}';
+    }
 }

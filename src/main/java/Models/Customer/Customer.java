@@ -91,4 +91,16 @@ public abstract class Customer {
     public void setActionHistory(List<String> actionHistory) {
         this.actionHistory = actionHistory;
     }
+
+    @Override
+    public String toString() {
+        return "cID='" + cID + '\'' +
+                ", role='" + role + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", phone='" + phone + '\'' +
+                ", address='" + address + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", actionHistory=" + actionHistory + '\'';
+    }
 }

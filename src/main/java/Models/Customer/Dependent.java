@@ -56,4 +56,15 @@ public class Dependent extends Customer{
     public void setClaimList(List<Claim> claimList) {
         this.claimList = claimList;
     }
+
+    @Override
+    public String toString() {
+        return "Dependent{" +
+                super.toString() +
+                "policyOwner='" + policyOwner + '\'' +
+                ", policyHolder='" + policyHolder + '\'' +
+                ", insuranceCardNumber='" + insuranceCardNumber + '\'' +
+                ", claimList=" + claimList +
+                '}';
+    }
 }

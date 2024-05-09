@@ -64,4 +64,15 @@ public class PolicyHolder extends Customer {
     public boolean removeFromDependentList(Dependent dependent) {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "PolicyHolder{" +
+                super.toString() +
+                "policyOwner='" + policyOwner + '\'' +
+                ", insuranceCardNumber='" + insuranceCardNumber + '\'' +
+                ", claimList=" + claimList +
+                ", dependentList=" + dependentList +
+                '}';
+    }
 }

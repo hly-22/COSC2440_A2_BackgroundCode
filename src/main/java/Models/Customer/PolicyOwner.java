@@ -42,4 +42,13 @@ public class PolicyOwner extends Customer {
         // body
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "PolicyOwner{" +
+                super.toString() +
+                "beneficiaries=" + beneficiaries +
+                ", insuranceFeeRate=" + insuranceFeeRate +
+                '}';
+    }
 }

@@ -57,4 +57,13 @@ public abstract class Provider {
     public void setActionHistory(List<String> actionHistory) {
         this.actionHistory = actionHistory;
     }
+
+    @Override
+    public String toString() {
+        return "pID='" + pID + '\'' +
+                ", role='" + role + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", password='" + password + '\'' +
+                ", actionHistory=" + actionHistory + '\'';
+    }
 }
