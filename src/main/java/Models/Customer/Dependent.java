@@ -29,6 +29,10 @@ public class Dependent extends Customer{
         this.insuranceCardNumber = null;
     }
 
+    public Dependent() {
+
+    }
+
     public String getPolicyOwner() {
         return policyOwner;
     }

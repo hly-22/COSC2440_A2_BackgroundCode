@@ -125,7 +125,7 @@ public abstract class Customer {
                 ", address='" + address + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", actionHistory=" + actionHistory + '\'' +
-                ", claimList=" + claimList + '\'';
+                ", actionHistory=" + actionHistory +
+                ", claimList=" + claimList;
     }
 }

@@ -19,6 +19,10 @@ public class InsuranceSurveyor extends Provider {
         this.insuranceManager = null;
     }
 
+    public InsuranceSurveyor() {
+
+    }
+
     public String getInsuranceManager() {
         return insuranceManager;
     }

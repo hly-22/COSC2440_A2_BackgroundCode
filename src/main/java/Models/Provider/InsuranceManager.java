@@ -20,6 +20,10 @@ public class InsuranceManager extends Provider{
         this.surveyorList = new ArrayList<>();
     }
 
+    public InsuranceManager() {
+
+    }
+
     public List<String> getSurveyorList() {
         return surveyorList;
     }

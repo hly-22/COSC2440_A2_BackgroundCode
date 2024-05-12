@@ -32,6 +32,10 @@ public class PolicyOwner extends Customer {
         this.insuranceFee = null;
     }
 
+    public PolicyOwner() {
+
+    }
+
     public List<String> getBeneficiaries() {
         if (beneficiaries == null) {
             return null;

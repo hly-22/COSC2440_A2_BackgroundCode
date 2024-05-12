@@ -73,6 +73,6 @@ public abstract class Provider {
                 ", role='" + role + '\'' +
                 ", fullName='" + fullName + '\'' +
                 ", password='" + password + '\'' +
-                ", actionHistory=" + actionHistory + '\'';
+                ", actionHistory=" + actionHistory;
     }
 }
