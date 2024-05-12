@@ -5,6 +5,9 @@ public class Main {
         SystemAdminOperations operations = new SystemAdminOperations();
 //        operations.addPolicyOwner();
 //        operations.addPolicyHolder();
-        operations.addDependent();
+//        operations.addDependent();
+
+        operations.addInsuranceManager();
+        operations.addInsuranceSurveyor();
     }
 }

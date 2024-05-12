@@ -10,6 +10,11 @@ public class InputChecker {
         String regex = "^c-[0-9]{7}$"; // c- followed by exactly 7 digits
         return cID.matches(regex);
     }
+    // check for valid PID
+    public static boolean isValidPIDFormat(String pID) {
+        String regex = "^p-[0-9]{7}$"; // p- followed by exactly 7 digits
+        return pID.matches(regex);
+    }
     // check for valid phone number
     public static boolean isValidPhoneNumber(String phone) {
         String digitsOnly = phone.replaceAll("[^0-9]", "");

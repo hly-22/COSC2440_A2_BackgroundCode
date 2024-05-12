@@ -1,5 +1,6 @@
 package Models.Provider;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Provider {
@@ -16,6 +17,14 @@ public abstract class Provider {
         this.fullName = fullName;
         this.password = password;
         this.actionHistory = actionHistory;
+    }
+
+    public Provider(String pID, String role, String fullName, String password) {
+        this.pID = pID;
+        this.role = role;
+        this.fullName = fullName;
+        this.password = password;
+        this.actionHistory = new ArrayList<>();
     }
 
     public String getPID() {

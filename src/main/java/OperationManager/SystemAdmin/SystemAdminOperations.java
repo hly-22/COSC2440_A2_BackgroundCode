@@ -6,6 +6,8 @@ import Models.Customer.PolicyHolder;
 import Models.Customer.PolicyOwner;
 import Models.InsuranceCard.InsuranceCard;
 import Models.Provider.InsuranceManager;
+import Models.Provider.InsuranceSurveyor;
+import Models.Provider.Provider;
 import Models.SystemAdmin.SystemAdmin;
 import OperationManager.Utils.InputChecker;
 
@@ -38,7 +40,7 @@ public class SystemAdminOperations {
 
     }
 
-    // add customer
+    // CRUD for policy owners
     public Customer addCustomer(String role) {
         System.out.println("Enter a valid cID (c-xxxxxxx): ");
         String cID = scanner.nextLine();
@@ -109,9 +111,6 @@ public class SystemAdminOperations {
 
         return new InsuranceCard(cardNumber, policyOwner.getCID(), expirationDate);
     }
-
-
-    // CRUD for policy owners
     public void addPolicyOwner() {
 
         PolicyOwner newPolicyOwner = (PolicyOwner) addCustomer("PolicyOwner");
@@ -224,8 +223,42 @@ public class SystemAdminOperations {
     }
 
     // CRUD for insurance managers
+    public Provider addProvider(String role) {
+
+        System.out.println("Enter a valid pID (p-xxxxxxx): ");
+        String pID = scanner.nextLine();
+        if (!InputChecker.isValidPIDFormat(pID)) {
+            System.out.println("Invalid provider ID format.");
+            return null;
+        }
+        // check if pID already exists
+
+        System.out.println("Enter full name: ");
+        String fullName = scanner.nextLine();
+
+        System.out.println("Enter password: ");
+        String enteredPassword = scanner.nextLine();
+        // convert password into hashed
+        String password = enteredPassword;
+
+        if (role.equalsIgnoreCase("insurancemanager")) {
+            return new InsuranceManager(pID, "InsuranceManager", fullName, password);
+        } else if (role.equalsIgnoreCase("insurancesurveyor")) {
+            return new InsuranceSurveyor(pID, "InsuranceSurveyor", fullName, password);
+        }
+        return null;
+    }
     public void addInsuranceManager() {
 
+        InsuranceManager newInsuranceManager = (InsuranceManager) addProvider("InsuranceManager");
+        if (newInsuranceManager == null) {
+            System.out.println("Invalid input. Try again.");
+            return;
+        }
+
+        System.out.println(newInsuranceManager);    // output test
+
+        addActionHistory(LocalDate.now() + ": add Insurance Manager " + newInsuranceManager.getPID());
     }
     public void getInsuranceManager(String pID) {
 
@@ -238,7 +271,26 @@ public class SystemAdminOperations {
     }
 
     // CRUD for insurance surveyors
-    public void addInsuranceSurveyor(InsuranceManager insuranceManager) {
+    public void addInsuranceSurveyor() {
+
+        System.out.println("Enter a Insurance Manager pID: ");
+        String insuranceManagerPID = scanner.nextLine();
+        // find existing insuranceManager, print error message and return if not found
+        // test insuranceManager
+        InsuranceManager insuranceManager = new InsuranceManager(insuranceManagerPID, "InsuranceManager", "HUiHUI", "popopo");
+
+        InsuranceSurveyor newInsuranceSurveyor = (InsuranceSurveyor) addProvider("InsuranceSurveyor");
+        if (newInsuranceSurveyor == null) {
+            System.out.println("Invalid input. Try again.");
+            return;
+        }
+        newInsuranceSurveyor.setInsuranceManager(insuranceManager.getPID());
+        insuranceManager.addToSurveyorList(newInsuranceSurveyor);
+
+        System.out.println(newInsuranceSurveyor);    // output test
+        System.out.println(insuranceManager);   //output test
+
+        addActionHistory(LocalDate.now() + ": add Insurance Surveyor " + newInsuranceSurveyor.getPID() + " to Insurance Manager " + insuranceManager.getPID());
 
     }
     public void getInsuranceSurveyor(String pID) {
