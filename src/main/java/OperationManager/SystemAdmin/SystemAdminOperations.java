@@ -231,7 +231,7 @@ public class SystemAdminOperations {
         if (role.equalsIgnoreCase("insurancemanager")) {
             return new InsuranceManager(pID, "InsuranceManager", fullName, password);
         } else if (role.equalsIgnoreCase("insurancesurveyor")) {
-            return new InsuranceSurveyor(pID, "InsuranceSurveyor", fullName, password);
+            return new InsuranceSurveyor(pID, fullName, password);
         }
         return null;
     }

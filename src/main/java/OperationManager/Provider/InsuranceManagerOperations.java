@@ -6,7 +6,9 @@ import Models.Claim.Claim;
 import Models.Customer.Dependent;
 import Models.Provider.InsuranceManager;
 import Models.Provider.InsuranceSurveyor;
+import OperationManager.Utils.InputChecker;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
@@ -21,8 +23,29 @@ public class InsuranceManagerOperations implements ProviderClaimDAO, ProviderCus
     }
 
     // methods relating to surveyors
-    public boolean addSurveyor(InsuranceSurveyor insuranceSurveyor) {
-        return false;
+    public void addSurveyor() {
+
+        System.out.println("Enter a valid pID (p-xxxxxxx): ");
+        String pID = scanner.nextLine();
+        if (!InputChecker.isValidPIDFormat(pID)) {
+            System.out.println("Invalid provider ID format.");
+            return;
+        }
+        // check if pID already exists
+
+        System.out.println("Enter full name: ");
+        String fullName = scanner.nextLine();
+
+        System.out.println("Enter password: ");
+        String enteredPassword = scanner.nextLine();
+        // convert password into hashed
+        String password = enteredPassword;
+
+        InsuranceSurveyor insuranceSurveyor = new InsuranceSurveyor(pID, fullName, password, insuranceManager.getPID());
+        System.out.println(insuranceSurveyor);
+
+        insuranceManager.addActionHistory(LocalDate.now() + ": add Insurance Surveyor " + insuranceSurveyor.getPID() + " to surveyor list");
+        System.out.println(insuranceManager.getActionHistory());
     }
     public boolean removeSurveyor(InsuranceSurveyor insuranceSurveyor) {
         return false;

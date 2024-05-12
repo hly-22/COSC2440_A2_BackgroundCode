@@ -14,13 +14,17 @@ public class InsuranceSurveyor extends Provider {
         this.insuranceManager = insuranceManager;
     }
 
-    public InsuranceSurveyor(String pID, String role, String fullName, String password) {
-        super(pID, "InsuranceSurveyor", fullName, password);
-        this.insuranceManager = null;
+    public InsuranceSurveyor() {
     }
 
-    public InsuranceSurveyor() {
+    public InsuranceSurveyor(String pID, String fullName, String password, String insuranceManager) {
+        super(pID, "InsuranceSurveyor", fullName, password);
+        this.insuranceManager = insuranceManager;
+    }
 
+    public InsuranceSurveyor(String pID, String fullName, String password) {
+        super(pID, "InsuranceSurveyor", fullName, password);
+        this.insuranceManager = null;
     }
 
     public String getInsuranceManager() {
