@@ -5,8 +5,21 @@ import Interfaces.UserInfoDAO;
 import Models.Claim.Claim;
 import Models.Customer.Customer;
 import Models.Customer.Dependent;
+import Models.Customer.PolicyHolder;
+
+import java.util.List;
+import java.util.Scanner;
 
 public class PolicyHolderOperations implements UserInfoDAO, CustomerClaimDAO {
+
+    private final PolicyHolder policyHolder = new PolicyHolder();
+    private final Scanner scanner = new Scanner(System.in);
+
+    public void addActionHistory(String action) {
+        List<String> actionHistory = policyHolder.getActionHistory();
+        actionHistory.add(action);
+        System.out.println(policyHolder);    // test output
+    }
 
     // methods relating to dependents
     public boolean addDependent(Dependent dependent) {

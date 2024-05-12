@@ -3,10 +3,23 @@ package OperationManager.Provider;
 import Interfaces.ProviderClaimDAO;
 import Interfaces.ProviderCustomerDAO;
 import Models.Claim.Claim;
+import Models.Customer.Dependent;
+import Models.Provider.InsuranceManager;
 import Models.Provider.InsuranceSurveyor;
+
+import java.util.List;
+import java.util.Scanner;
 
 public class InsuranceManagerOperations implements ProviderClaimDAO, ProviderCustomerDAO {
 
+    private final InsuranceManager insuranceManager = new InsuranceManager();
+    private final Scanner scanner = new Scanner(System.in);
+
+    public void addActionHistory(String action) {
+        List<String> actionHistory = insuranceManager.getActionHistory();
+        actionHistory.add(action);
+        System.out.println(insuranceManager);    // test output
+    }
     // method to update password
     public void updateProviderPassword(String password) {
 

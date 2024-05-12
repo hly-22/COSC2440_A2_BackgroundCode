@@ -6,8 +6,21 @@ import Models.Claim.Claim;
 import Models.Customer.Customer;
 import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
+import Models.Customer.PolicyOwner;
+
+import java.util.List;
+import java.util.Scanner;
 
 public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
+
+    private final PolicyOwner policyOwner = new PolicyOwner();
+    private final Scanner scanner = new Scanner(System.in);
+
+    public void addActionHistory(String action) {
+        List<String> actionHistory = policyOwner.getActionHistory();
+        actionHistory.add(action);
+        System.out.println(policyOwner);    // test output
+    }
 
     // method to calculate yearly cost to pay for insurance providers
     public void calculateYearlyCost() {
