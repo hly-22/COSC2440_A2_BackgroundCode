@@ -15,11 +15,6 @@ public class InsuranceManagerOperations implements ProviderClaimDAO, ProviderCus
     private final InsuranceManager insuranceManager = new InsuranceManager();
     private final Scanner scanner = new Scanner(System.in);
 
-    public void addActionHistory(String action) {
-        List<String> actionHistory = insuranceManager.getActionHistory();
-        actionHistory.add(action);
-        System.out.println(insuranceManager);    // test output
-    }
     // method to update password
     public void updateProviderPassword(String password) {
 

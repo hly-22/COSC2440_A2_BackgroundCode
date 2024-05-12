@@ -28,13 +28,6 @@ public class SystemAdminOperations {
 
     }
 
-    // add action history
-    public void addActionHistory(String action) {
-        List<String> actionHistory = systemAdmin.getActionHistory();
-        actionHistory.add(action);
-        System.out.println(systemAdmin);    // test output
-    }
-
     // method to sum successfully claimed amount with different filtering options
     public void sumClaimAmount() {
 
@@ -126,12 +119,18 @@ public class SystemAdminOperations {
 
         System.out.println(newPolicyOwner); // output test
 
-        addActionHistory(LocalDate.now() + ": add Policy Owner " + newPolicyOwner.getCID());
+        systemAdmin.addActionHistory(LocalDate.now() + ": add Policy Owner " + newPolicyOwner.getCID());
+        System.out.println(systemAdmin.getActionHistory());
     }
     public void getPolicyOwner(String cID) {
-
+        // connect database to execute
     }
     public void updatePolicyOwner(String cID) {
+        // find policyOwner by cID: getPolicyOwner(String cID)
+        // test policyOwner
+        PolicyOwner policyOwner = new PolicyOwner("c-0000000", "owner_tester", "090909090","Canada", "tester_owner@gmail.com", "popoipoiu");
+
+
 
     }
     public void deletePolicyOwner(String cID) {
@@ -147,6 +146,8 @@ public class SystemAdminOperations {
             return;
         }
         newPolicyHolder.setPolicyOwner(policyOwner.getCID());
+        policyOwner.addToBeneficiaries(newPolicyHolder);
+        System.out.println(policyOwner);
 
         InsuranceCard newInsuranceCard = addInsuranceCard(policyOwner);
         newInsuranceCard.setCardHolder(newPolicyHolder.getCID());
@@ -155,7 +156,9 @@ public class SystemAdminOperations {
         newPolicyHolder.setInsuranceCardNumber(newInsuranceCard.getCardNumber());
         System.out.println(newPolicyHolder);
 
-        addActionHistory(LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber());
+        systemAdmin.addActionHistory(LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Owner " + policyOwner.getCID());
+        System.out.println(systemAdmin.getActionHistory());
+        policyOwner.addActionHistory(LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to beneficiaries by System Admin");
     }
     public void getPolicyHolder(String cID) {
 
@@ -178,7 +181,9 @@ public class SystemAdminOperations {
         newDependent.setPolicyOwner(policyOwner.getCID());
         newDependent.setPolicyHolder(policyHolder.getCID());
         policyHolder.addToDependentList(newDependent);
+        policyOwner.addToBeneficiaries(newDependent);
         System.out.println(policyHolder);   // output test
+        System.out.println(policyOwner);    // output test
 
         InsuranceCard newInsuranceCard = addInsuranceCard(policyOwner);
         newInsuranceCard.setCardHolder(newDependent.getCID());
@@ -187,7 +192,12 @@ public class SystemAdminOperations {
         newDependent.setInsuranceCardNumber(newInsuranceCard.getCardNumber());
         System.out.println(newDependent);   // output test
 
-        addActionHistory(LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Holder " + policyHolder.getCID());
+        systemAdmin.addActionHistory(LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Holder " + policyHolder.getCID());
+        System.out.println(systemAdmin.getActionHistory());
+        policyOwner.addActionHistory(LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Holder " + policyHolder.getCID() + " to beneficiaries by System Admin");
+        System.out.println(policyOwner.getActionHistory());
+        policyHolder.addActionHistory(LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to dependent list by System Admin");
+
     }
     public void getDependent(String cID) {
 
@@ -235,7 +245,8 @@ public class SystemAdminOperations {
 
         System.out.println(newInsuranceManager);    // output test
 
-        addActionHistory(LocalDate.now() + ": add Insurance Manager " + newInsuranceManager.getPID());
+        systemAdmin.addActionHistory(LocalDate.now() + ": add Insurance Manager " + newInsuranceManager.getPID());
+        System.out.println(systemAdmin.getActionHistory());
     }
     public void getInsuranceManager(String pID) {
 
@@ -261,8 +272,9 @@ public class SystemAdminOperations {
         System.out.println(newInsuranceSurveyor);    // output test
         System.out.println(insuranceManager);   //output test
 
-        addActionHistory(LocalDate.now() + ": add Insurance Surveyor " + newInsuranceSurveyor.getPID() + " to Insurance Manager " + insuranceManager.getPID());
-
+        systemAdmin.addActionHistory(LocalDate.now() + ": add Insurance Surveyor " + newInsuranceSurveyor.getPID() + " to Insurance Manager " + insuranceManager.getPID());
+        System.out.println(systemAdmin.getActionHistory());
+        insuranceManager.addActionHistory(LocalDate.now() + ": add Insurance Surveyor " + newInsuranceSurveyor.getPID() + " to surveyor list by System Admin");
     }
     public void getInsuranceSurveyor(String pID) {
 

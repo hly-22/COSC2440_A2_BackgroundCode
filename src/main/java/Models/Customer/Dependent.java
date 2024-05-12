@@ -28,9 +28,22 @@ public class Dependent extends Customer{
         this.policyHolder = null;
         this.insuranceCardNumber = null;
     }
+    public Dependent(String cID, String fullName, String phone, String address, String email, String password, String policyOwner) {
+        super(cID, "Dependent", fullName, phone, address, email, password);
+        this.policyOwner = policyOwner;
+        this.policyHolder = null;
+        this.insuranceCardNumber = null;
+    }
 
     public Dependent() {
 
+    }
+
+    public Dependent(String cID, String fullName, String phone, String address, String email, String password, String policyOwner, String policyHolder) {
+        super(cID, "Dependent", fullName, phone, address, email, password);
+        this.policyOwner = policyOwner;
+        this.policyHolder = policyHolder;
+        this.insuranceCardNumber = null;
     }
 
     public String getPolicyOwner() {

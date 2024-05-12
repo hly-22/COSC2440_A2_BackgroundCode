@@ -14,11 +14,6 @@ public class InsuranceSurveyorOperations implements ProviderClaimDAO, ProviderCu
     private final InsuranceSurveyor insuranceSurveyor = new InsuranceSurveyor();
     private final Scanner scanner = new Scanner(System.in);
 
-    public void addActionHistory(String action) {
-        List<String> actionHistory = insuranceSurveyor.getActionHistory();
-        actionHistory.add(action);
-        System.out.println(insuranceSurveyor);    // test output
-    }
 
     // method to update password
     public void updateProviderPassword(String password) {

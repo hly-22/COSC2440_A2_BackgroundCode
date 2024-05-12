@@ -17,6 +17,7 @@ public class SystemAdminView {
     }
     public static void addAPolicyHolder() {
 
+        System.out.println();
         System.out.println("Enter a Policy Owner cID: ");
         String policyOwnerCID = scanner.nextLine();
         // find existing policy owner, print error message and return if not found
@@ -27,6 +28,7 @@ public class SystemAdminView {
     }
     public static void addADependent() {
 
+        System.out.println();
         System.out.println("Enter a Policy Owner cID: ");
         String policyOwnerCID = scanner.nextLine();
         // find existing policy owner, print error message and return if not found

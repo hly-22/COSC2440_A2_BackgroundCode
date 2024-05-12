@@ -33,7 +33,8 @@ public class PolicyOwner extends Customer {
     }
 
     public PolicyOwner() {
-
+        super();
+        this.beneficiaries = new ArrayList<>();
     }
 
     public List<String> getBeneficiaries() {
@@ -56,12 +57,23 @@ public class PolicyOwner extends Customer {
     }
 
     public boolean addToBeneficiaries(Customer customer) {
-        // body
-        return false;
+        return beneficiaries.add(customer.getCID());
     }
     public boolean removeFromBeneficiaries(Customer customer) {
-        // body
-        return false;
+        // remove from beneficiaries, delete from the database; if it is a policyholder, delete also their dependents
+        int indexToRemove = -1;
+        for (int i = 0; i < beneficiaries.size(); i++) {
+            if (beneficiaries.get(i).equals(customer.getCID())) {
+                indexToRemove = i;
+                break;
+            }
+        }
+        if (indexToRemove != -1) {
+            beneficiaries.remove(indexToRemove);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

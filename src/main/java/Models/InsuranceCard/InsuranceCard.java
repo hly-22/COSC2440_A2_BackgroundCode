@@ -25,6 +25,13 @@ public class InsuranceCard {
         this.expirationDate = expirationDate;
     }
 
+    public InsuranceCard(String cardNumber, LocalDate expirationDate) {
+        this.cardNumber = cardNumber;
+        this.cardHolder = null;
+        this.policyOwner = null;
+        this.expirationDate = expirationDate;
+    }
+
     public void setPolicyOwner(String policyOwner) {
         this.policyOwner = policyOwner;
     }

@@ -20,7 +20,9 @@ public abstract class Customer {
     private List<String> actionHistory;
     private List<Claim> claimList;
 
-    public Customer() {}
+    public Customer() {
+        this.actionHistory = new ArrayList<>();
+    }
     public Customer(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory, List<Claim> claimList) {
         this.cID = cID;
         this.role = role;
@@ -106,6 +108,9 @@ public abstract class Customer {
 
     public void setActionHistory(List<String> actionHistory) {
         this.actionHistory = actionHistory;
+    }
+    public void addActionHistory(String action) {
+        actionHistory.add(action);
     }
 
     public List<Claim> getClaimList() {

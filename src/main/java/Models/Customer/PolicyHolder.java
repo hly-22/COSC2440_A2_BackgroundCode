@@ -29,9 +29,21 @@ public class PolicyHolder extends Customer {
         this.insuranceCardNumber = null;
         this.dependentList = new ArrayList<>();
     }
+    public PolicyHolder(String cID, String fullName, String phone, String address, String email, String password, String policyOwner) {
+        super(cID, "PolicyHolder", fullName, phone, address, email, password);
+        this.policyOwner = policyOwner;
+        this.insuranceCardNumber = null;
+        this.dependentList = new ArrayList<>();
+    }
 
     public PolicyHolder() {
-
+        this.dependentList = new ArrayList<>();
+    }
+    public PolicyHolder(String cID) {
+        super(cID, "PolicyHolder", "Haha", "0980980980", "Mountaint", "aweij@gmai.com", "198274hj");
+        this.policyOwner = null;
+        this.insuranceCardNumber = null;
+        this.dependentList = new ArrayList<>();
     }
 
     public String getPolicyOwner() {

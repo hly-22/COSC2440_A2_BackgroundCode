@@ -14,11 +14,6 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
     private final Dependent dependent = new Dependent();
     private final Scanner scanner = new Scanner(System.in);
 
-    public void addActionHistory(String action) {
-        List<String> actionHistory = dependent.getActionHistory();
-        actionHistory.add(action);
-        System.out.println(dependent);    // test output
-    }
     @Override
     public boolean addClaim(Customer customer, Claim claim) {
         return false;   // not available to dependents

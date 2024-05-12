@@ -35,6 +35,9 @@ public class SystemAdmin {
     public void setActionHistory(List<String> actionHistory) {
         this.actionHistory = actionHistory;
     }
+    public void addActionHistory(String action) {
+        actionHistory.add(action);
+    }
 
     @Override
     public String toString() {
