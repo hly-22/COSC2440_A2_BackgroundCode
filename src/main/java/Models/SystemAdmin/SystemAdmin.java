@@ -1,5 +1,6 @@
 package Models.SystemAdmin;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SystemAdmin {
@@ -8,6 +9,7 @@ public class SystemAdmin {
     private List<String> actionHistory;
 
     public SystemAdmin() {
+        this.actionHistory = new ArrayList<>();
     }
 
     public String getUsername() {
@@ -32,5 +34,14 @@ public class SystemAdmin {
 
     public void setActionHistory(List<String> actionHistory) {
         this.actionHistory = actionHistory;
+    }
+
+    @Override
+    public String toString() {
+        return "SystemAdmin{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", actionHistory=" + actionHistory +
+                '}';
     }
 }

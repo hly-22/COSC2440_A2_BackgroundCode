@@ -1,24 +1,41 @@
 package Models.Customer;
 
+import Models.Claim.Claim;
+
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PolicyOwner extends Customer {
      private List<String> beneficiaries;
-     private BigDecimal insuranceFeeRate;
+     private BigDecimal insuranceFee;
 
-    public PolicyOwner(List<String> beneficiaries, BigDecimal insuranceFeeRate) {
+    public PolicyOwner(List<String> beneficiaries, BigDecimal insuranceFee) {
         this.beneficiaries = beneficiaries;
-        this.insuranceFeeRate = insuranceFeeRate;
+        this.insuranceFee = insuranceFee;
     }
 
-    public PolicyOwner(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory, List<String> beneficiaries, BigDecimal insuranceFeeRate) {
-        super(cID, role, fullName, phone, address, email, password, actionHistory);
+    public PolicyOwner(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory, List<Claim> claimList, List<String> beneficiaries, BigDecimal insuranceFee) {
+        super(cID, role, fullName, phone, address, email, password, actionHistory, claimList);
         this.beneficiaries = beneficiaries;
-        this.insuranceFeeRate = insuranceFeeRate;
+        this.insuranceFee = insuranceFee;
+    }
+    public PolicyOwner(String cID, String fullName, String phone, String address, String email, String password, BigDecimal insuranceFee) {
+        super(cID, "PolicyOwner", fullName, phone, address, email, password);
+        this.beneficiaries = new ArrayList<>();
+        this.insuranceFee = insuranceFee;
+    }
+
+    public PolicyOwner(String cID, String fullName, String phone, String address, String email, String password) {
+        super(cID, "PolicyOwner", fullName, phone, address, email, password);
+        this.beneficiaries = new ArrayList<>();
+        this.insuranceFee = null;
     }
 
     public List<String> getBeneficiaries() {
+        if (beneficiaries == null) {
+            return null;
+        }
         return beneficiaries;
     }
 
@@ -26,12 +43,12 @@ public class PolicyOwner extends Customer {
         this.beneficiaries = beneficiaries;
     }
 
-    public BigDecimal getInsuranceFeeRate() {
-        return insuranceFeeRate;
+    public BigDecimal getInsuranceFee() {
+        return insuranceFee;
     }
 
-    public void setInsuranceFeeRate(BigDecimal insuranceFeeRate) {
-        this.insuranceFeeRate = insuranceFeeRate;
+    public void setInsuranceFee(BigDecimal insuranceFee) {
+        this.insuranceFee = insuranceFee;
     }
 
     public boolean addToBeneficiaries(Customer customer) {
@@ -47,8 +64,8 @@ public class PolicyOwner extends Customer {
     public String toString() {
         return "PolicyOwner{" +
                 super.toString() +
-                "beneficiaries=" + beneficiaries +
-                ", insuranceFeeRate=" + insuranceFeeRate +
+                ", beneficiaries=" + beneficiaries +
+                ", insuranceFee=" + insuranceFee +
                 '}';
     }
 }

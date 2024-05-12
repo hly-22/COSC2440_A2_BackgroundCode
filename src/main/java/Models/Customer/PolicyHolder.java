@@ -2,27 +2,36 @@ package Models.Customer;
 
 import Models.Claim.Claim;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PolicyHolder extends Customer {
     private String policyOwner;
     private String insuranceCardNumber;
-    private List<Claim> claimList;
     private List<String> dependentList;
 
-    public PolicyHolder(String policyOwner, String insuranceCardNumber, List<Claim> claimList, List<String> dependentList) {
+    public PolicyHolder(String policyOwner, String insuranceCardNumber, List<String> dependentList) {
         this.policyOwner = policyOwner;
         this.insuranceCardNumber = insuranceCardNumber;
-        this.claimList = claimList;
         this.dependentList = dependentList;
     }
 
-    public PolicyHolder(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory, String policyOwner, String insuranceCardNumber, List<Claim> claimList, List<String> dependentList) {
-        super(cID, role, fullName, phone, address, email, password, actionHistory);
+    public PolicyHolder(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory, List<Claim> claimList, String policyOwner, String insuranceCardNumber, List<String> dependentList) {
+        super(cID, role, fullName, phone, address, email, password, actionHistory, claimList);
         this.policyOwner = policyOwner;
         this.insuranceCardNumber = insuranceCardNumber;
-        this.claimList = claimList;
         this.dependentList = dependentList;
+    }
+
+    public PolicyHolder(String cID, String fullName, String phone, String address, String email, String password) {
+        super(cID, "PolicyHolder", fullName, phone, address, email, password);
+        this.policyOwner = null;
+        this.insuranceCardNumber = null;
+        this.dependentList = new ArrayList<>();
+    }
+
+    public PolicyHolder() {
+
     }
 
     public String getPolicyOwner() {
@@ -41,14 +50,6 @@ public class PolicyHolder extends Customer {
         this.insuranceCardNumber = insuranceCardNumber;
     }
 
-    public List<Claim> getClaimList() {
-        return claimList;
-    }
-
-    public void setClaimList(List<Claim> claimList) {
-        this.claimList = claimList;
-    }
-
     public List<String> getDependentList() {
         return dependentList;
     }
@@ -58,21 +59,32 @@ public class PolicyHolder extends Customer {
     }
 
     public boolean addToDependentList(Dependent dependent) {
-        return false;
+        return dependentList.add(dependent.getCID());
     }
 
     public boolean removeFromDependentList(Dependent dependent) {
-        return false;
+        int indexToRemove = -1;
+        for (int i = 0; i < dependentList.size(); i++) {
+            if (dependentList.get(i).equals(dependent.getCID())) {
+                indexToRemove = i;
+                break;
+            }
+        }
+        if (indexToRemove != -1) {
+            dependentList.remove(indexToRemove);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public String toString() {
         return "PolicyHolder{" +
                 super.toString() +
-                "policyOwner='" + policyOwner + '\'' +
+                ", policyOwner='" + policyOwner + '\'' +
                 ", insuranceCardNumber='" + insuranceCardNumber + '\'' +
-                ", claimList=" + claimList +
-                ", dependentList=" + dependentList +
+                ", dependentList=" + dependentList + '\'' +
                 '}';
     }
 }
