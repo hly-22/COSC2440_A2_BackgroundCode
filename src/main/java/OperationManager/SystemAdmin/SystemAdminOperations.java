@@ -139,12 +139,7 @@ public class SystemAdminOperations {
     }
 
     // CRUD for policyholders
-    public void addPolicyHolder() {
-        System.out.println("Enter a Policy Owner cID: ");
-        String policyOwnerCID = scanner.nextLine();
-        // find existing policy owner, print error message and return if not found
-        // test policyOwner
-        PolicyOwner policyOwner = new PolicyOwner(policyOwnerCID, "owner_tester", "090909090","Canada", "tester_owner@gmail.com", "popoipoiu");
+    public void addPolicyHolder(PolicyOwner policyOwner) {
 
         PolicyHolder newPolicyHolder = (PolicyHolder) addCustomer("PolicyHolder");
         if (newPolicyHolder == null) {
@@ -173,25 +168,7 @@ public class SystemAdminOperations {
     }
 
     // CRUD for dependents
-    public void addDependent() {
-        System.out.println("Enter a Policy Owner cID: ");
-        String policyOwnerCID = scanner.nextLine();
-        // find existing policy owner, print error message and return if not found
-        // test policyOwner
-        PolicyOwner policyOwner = new PolicyOwner(policyOwnerCID, "ownertester", "090909090","jijijiji", "testerowner@gmail.com", "popoipoiu");  // test
-
-        System.out.println("Enter a Policy Holder cID: ");
-        String policyHolderCID = scanner.nextLine();
-        // find if policyHolder exist in policyOwner beneficiaries
-        // test policyHolder
-        PolicyHolder policyHolder = new PolicyHolder(policyHolderCID, "9090909090", new ArrayList<>());
-//        if (policyOwner.getBeneficiaries() != null) {
-//            for (String beneCID : policyOwner.getBeneficiaries()) {
-//                if (policyHolderCID.equals(beneCID)) {
-//                    policyHolder = new PolicyHolder(null, null, null);  // findBeneficiaryByCID
-//                }
-//            }
-//        }
+    public void addDependent(PolicyOwner policyOwner, PolicyHolder policyHolder) {
 
         Dependent newDependent = (Dependent) addCustomer("Dependent");
         if (newDependent == null) {
@@ -271,13 +248,7 @@ public class SystemAdminOperations {
     }
 
     // CRUD for insurance surveyors
-    public void addInsuranceSurveyor() {
-
-        System.out.println("Enter a Insurance Manager pID: ");
-        String insuranceManagerPID = scanner.nextLine();
-        // find existing insuranceManager, print error message and return if not found
-        // test insuranceManager
-        InsuranceManager insuranceManager = new InsuranceManager(insuranceManagerPID, "InsuranceManager", "HUiHUI", "popopo");
+    public void addInsuranceSurveyor(InsuranceManager insuranceManager) {
 
         InsuranceSurveyor newInsuranceSurveyor = (InsuranceSurveyor) addProvider("InsuranceSurveyor");
         if (newInsuranceSurveyor == null) {

@@ -1,13 +1,8 @@
-import OperationManager.SystemAdmin.SystemAdminOperations;
+import ViewManager.SystemAdmin.SystemAdminView;
 
 public class Main {
     public static void main(String[] args) {
-        SystemAdminOperations operations = new SystemAdminOperations();
-//        operations.addPolicyOwner();
-//        operations.addPolicyHolder();
-//        operations.addDependent();
-
-        operations.addInsuranceManager();
-        operations.addInsuranceSurveyor();
+        SystemAdminView adminView = new SystemAdminView();
+        adminView.displayAdminMenu();
     }
 }
