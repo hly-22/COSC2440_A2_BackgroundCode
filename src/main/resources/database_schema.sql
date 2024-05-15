@@ -68,7 +68,8 @@ CREATE TABLE customer(
    address character varying,
    email character varying,
    password character varying,
-   action_history character varying[]
+   action_history character varying[],
+   claim_list character varying[]
 );
 
 -- Create (child) policy_owner  table
@@ -105,9 +106,6 @@ ALTER TABLE claim
 -- Alter document table (f_id) to REFERENCE claim (f_id)
 ALTER TABLE document
     ADD FOREIGN KEY (f_id) REFERENCES claim(f_id);
-
--- Create Unique Index on Provider
-CREATE UNIQUE INDEX unique_provider_c_id ON customer (c_id);
 
 -- Create a function to check p_id uniqueness only for INSERT operations
 CREATE OR REPLACE FUNCTION enforce_unique_pid() RETURNS TRIGGER AS $$

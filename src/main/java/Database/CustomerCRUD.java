@@ -1,6 +1,7 @@
 package Database;
 
 import Models.Claim.Claim;
+import Models.Customer.PolicyHolder;
 import Models.Customer.PolicyOwner;
 import Models.Provider.InsuranceManager;
 
@@ -102,6 +103,28 @@ public class CustomerCRUD {
             throw new RuntimeException("Error deleting Policy Owner", e);
         }
     }
+    public void updatePolicyOwnerActionHistory(String policyOwnerId, String action) {
+        String sql = "UPDATE policy_owner SET action_history = array_append(action_history, ?) WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, action);
+            pstmt.setString(2, policyOwnerId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void addToBeneficiaries(String policyOwnerId, String newBeneficiaryId) {
+        String sql = "UPDATE policy_owner SET beneficiaries = array_append(beneficiaries, ?) WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newBeneficiaryId);
+            pstmt.setString(2, policyOwnerId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
 
@@ -136,6 +159,42 @@ public class CustomerCRUD {
 
     // CRUD for policyholders
 
+
+
+//    public PolicyHolder readPolicyHolder(String cID) throws SQLException {
+//        String sql = "SELECT * FROM policy_holder WHERE c_id = ?";
+//        try (Connection conn = databaseConnection.connect();
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//            pstmt.setString(1, cID);
+//            try (ResultSet rs = pstmt.executeQuery()) {
+//                if (rs.next()) {
+//                    String role = rs.getString("role");
+//                    String fullName = rs.getString("full_name");
+//                    String phone = rs.getString("phone");
+//                    String address = rs.getString("address");
+//                    String email = rs.getString("email");
+//                    String password = rs.getString("password");
+//                    List<String> actionHistory = Arrays.asList((String[]) rs.getArray("action_history").getArray());
+//                    String policyOwner = rs.getString("policy_owner");
+//                    String insuranceCardNumber = rs.getString("insurance_card_number");
+//                    List<String> dependentList = Arrays.asList((String[]) rs.getArray("dependentlist").getArray());
+//                    return new PolicyHolder(cID, role, fullName, phone, address, email, password, actionHistory, policyOwner, insuranceCardNumber, dependentList);
+//                } else {
+//                    System.out.println("No Policy Holder found with cID: " + cID);
+//                    return null;
+//                }
+//            }
+//        }
+//    }
+
+    public void deletePolicyHolder(String cID) throws SQLException {
+        String sql = "DELETE FROM policy_holder WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            pstmt.executeUpdate();
+        }
+    }
 
 
     // CRUD for dependents

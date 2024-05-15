@@ -261,7 +261,7 @@ public class ProviderCRUD {
 
         return false; // Return false by default if an exception occurs
     }
-    public void addSurveyorToList(String managerID, String surveyorID) throws SQLException {
+    public void addSurveyorToList(String managerID, String surveyorID) {
         String sql = "UPDATE insurance_manager SET surveyor_list = array_append(surveyor_list, ?) WHERE p_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

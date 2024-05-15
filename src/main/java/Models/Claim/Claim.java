@@ -19,9 +19,10 @@ public class Claim {
     private ClaimStatus status;
     private String receiverBankingInfo;
 
-    public Claim(String fID, LocalDate claimDate, String insuredPerson, InsuranceCard cardNumber, LocalDate examDate, List<Document> documentList, BigDecimal claimAmount, ClaimStatus status, String receiverBankingInfo) {
+    public Claim(String fID, LocalDate claimDate, String cID, String insuredPerson, InsuranceCard cardNumber, LocalDate examDate, List<Document> documentList, BigDecimal claimAmount, ClaimStatus status, String receiverBankingInfo) {
         this.fID = fID;
         this.claimDate = claimDate;
+        this.cID = cID;
         this.insuredPerson = insuredPerson;
         this.cardNumber = cardNumber;
         this.examDate = examDate;

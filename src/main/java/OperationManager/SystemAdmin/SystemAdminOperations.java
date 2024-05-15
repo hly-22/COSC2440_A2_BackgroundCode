@@ -1,9 +1,6 @@
 package OperationManager.SystemAdmin;
 
-import Database.CustomerCRUD;
-import Database.DatabaseConnection;
-import Database.ProviderCRUD;
-import Database.SystemAdminCRUD;
+import Database.*;
 import Models.Customer.Customer;
 import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
@@ -30,6 +27,7 @@ public class SystemAdminOperations {
     private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
     private ProviderCRUD providerCRUD = new ProviderCRUD(databaseConnection);
     private CustomerCRUD customerCRUD = new CustomerCRUD(databaseConnection);
+    private InsuranceCardCRUD insuranceCardCRUD = new InsuranceCardCRUD(databaseConnection);
     private SystemAdminCRUD systemAdminCRUD = new SystemAdminCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
 
@@ -189,19 +187,23 @@ public class SystemAdminOperations {
             return;
         }
         newPolicyHolder.setPolicyOwner(policyOwner.getCID());
-        policyOwner.addToBeneficiaries(newPolicyHolder);
-        System.out.println(policyOwner);
+//        policyOwner.addToBeneficiaries(newPolicyHolder);
+//        System.out.println(policyOwner);
+        customerCRUD.addToBeneficiaries(policyOwner.getCID(), newPolicyHolder.getCID());
 
         InsuranceCard newInsuranceCard = addInsuranceCard(policyOwner);
         newInsuranceCard.setCardHolder(newPolicyHolder.getCID());
-        System.out.println(newInsuranceCard);
+//        System.out.println(newInsuranceCard);
+        boolean createInsuranceCardSuccessfully = insuranceCardCRUD.createInsuranceCard(newInsuranceCard);
 
         newPolicyHolder.setInsuranceCardNumber(newInsuranceCard.getCardNumber());
-        System.out.println(newPolicyHolder);
+//        System.out.println(newPolicyHolder);
 
-        systemAdmin.addActionHistory(LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Owner " + policyOwner.getCID());
-        System.out.println(systemAdmin.getActionHistory());
-        policyOwner.addActionHistory(LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to beneficiaries by System Admin");
+
+        systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Owner " + policyOwner.getCID());
+        customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to beneficiaries by System Admin");
+        System.out.println("Policy Holder and Insurance Card added successfully!");
+
     }
 
 
