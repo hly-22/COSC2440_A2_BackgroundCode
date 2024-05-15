@@ -51,7 +51,6 @@ public class SystemAdminOperations {
             System.out.println("Invalid customer ID format.");
             return null;
         }
-        // check if cID already exists
 
         System.out.println("Enter full name: ");
         String fullName = scanner.nextLine();
@@ -261,7 +260,6 @@ public class SystemAdminOperations {
             System.out.println("Invalid provider ID format.");
             return null;
         }
-        // check if pID already exists
 
         System.out.println("Enter full name: ");
         String fullName = scanner.nextLine();
@@ -302,8 +300,16 @@ public class SystemAdminOperations {
             throw new RuntimeException("Error reading Insurance Manager from database", e);
         }
     }
-    public void updateInsuranceManager(String pID) {
-
+    public void updateInsuranceManager(String pID, String newPassword) throws SQLException {
+        try {
+            providerCRUD.updateInsuranceManager(pID, newPassword);
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": updated Insurance Manager " + pID);
+        } catch (SQLException e) {
+            if (e.getMessage().contains("no rows affected")) {
+                throw new SQLException("No Insurance Manager found with pID: " + pID, e);
+            }
+            throw e;
+        }
     }
     public void deleteInsuranceManager(String pID) {
         try {
@@ -342,8 +348,16 @@ public class SystemAdminOperations {
             throw new RuntimeException("Error reading Insurance Surveyor from database", e);
         }
     }
-    public void updateInsuranceSurveyor(String pID) {
-
+    public void updateInsuranceSurveyor(String pID, String newPassword) throws SQLException {
+        try {
+            providerCRUD.updateInsuranceSurveyor(pID, newPassword);
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": updated Insurance Surveyor " + pID);
+        } catch (SQLException e) {
+            if (e.getMessage().contains("no rows affected")) {
+                throw new SQLException("No Insurance Surveyor found with pID: " + pID, e);
+            }
+            throw e;
+        }
     }
     public void deleteInsuranceSurveyor(String pID) {
         try {

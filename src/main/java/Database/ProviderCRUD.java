@@ -75,22 +75,18 @@ public class ProviderCRUD {
             }
         }
     }
-
-//    public void updateInsuranceManager(String pID, String role, String fullName, String password, String[] actionHistory, String[] surveyorList) throws SQLException {
-//        String sql = "UPDATE InsuranceManager SET role = ?, fullName = ?, password = ?, actionHistory = ?, surveyorList = ? WHERE pID = ?";
-//        try (Connection conn = databaseConnection.getConnection();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//            pstmt.setString(1, role);
-//            pstmt.setString(2, fullName);
-//            pstmt.setString(3, password);
-//            pstmt.setArray(4, conn.createArrayOf("varchar", actionHistory));
-//            pstmt.setArray(5, conn.createArrayOf("varchar", surveyorList));
-//            pstmt.setString(6, pID);
-//            pstmt.executeUpdate();
-//            System.out.println("InsuranceManager updated successfully!");
-//        }
-//    }
-//
+    public void updateInsuranceManager(String pID, String newPassword) throws SQLException {
+        String sql = "UPDATE insurance_manager SET password = ? WHERE p_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newPassword);
+            pstmt.setString(2, pID);
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Updating insurance manager failed, no rows affected.");
+            }
+        }
+    }
     public void deleteInsuranceManager(String pID) throws SQLException {
         String deleteSurveyorsSQL = "DELETE FROM insurance_surveyor WHERE insurance_manager = ?";
         String deleteManagerSQL = "DELETE FROM insurance_manager WHERE p_id = ?";
@@ -216,6 +212,18 @@ public class ProviderCRUD {
                     System.out.println("No Insurance Surveyor found with pID: " + pID);
                     return null;
                 }
+            }
+        }
+    }
+    public void updateInsuranceSurveyor(String pID, String newPassword) throws SQLException {
+        String sql = "UPDATE insurance_surveyor SET password = ? WHERE p_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newPassword);
+            pstmt.setString(2, pID);
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Updating insurance surveyor failed, no rows affected.");
             }
         }
     }

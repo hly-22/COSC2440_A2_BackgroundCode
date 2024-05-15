@@ -5,6 +5,7 @@ import Models.Customer.PolicyOwner;
 import Models.Provider.InsuranceManager;
 import Models.Provider.InsuranceSurveyor;
 import OperationManager.SystemAdmin.SystemAdminOperations;
+import OperationManager.Utils.InputChecker;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,7 +41,6 @@ public class SystemAdminView {
             System.out.println("Deletion canceled.");
         }
     }
-
 
     public static void addAPolicyHolder() {
 
@@ -173,6 +173,50 @@ public class SystemAdminView {
         System.out.println("Policy Owner updated successfully!");
 
     }
+    public void updateInsuranceManager() {
+
+        System.out.println("Enter Insurance Manager ID to update:");
+        String pID = scanner.nextLine();
+        if (!InputChecker.isValidPIDFormat(pID)) {
+            System.out.println("Invalid provider ID format.");
+            return;
+        }
+        System.out.println("Enter new password:");
+        String newPassword = scanner.nextLine();
+
+        try {
+            operations.updateInsuranceManager(pID, newPassword);
+            System.out.println("Insurance Manager updated successfully!");
+        } catch (SQLException e) {
+            if (e.getMessage().contains("No Insurance Manager found with pID")) {
+                System.out.println(e.getMessage());
+            } else {
+                System.out.println("Error updating Insurance Manager: " + e.getMessage());
+            }
+        }
+    }
+    public void updateInsuranceSurveyor() {
+
+        System.out.println("Enter Insurance Surveyor ID to update:");
+        String pID = scanner.nextLine();
+        if (!InputChecker.isValidPIDFormat(pID)) {
+            System.out.println("Invalid provider ID format.");
+            return;
+        }
+        System.out.println("Enter new password:");
+        String newPassword = scanner.nextLine();
+
+        try {
+            operations.updateInsuranceSurveyor(pID, newPassword);
+            System.out.println("Insurance Surveyor updated successfully!");
+        } catch (SQLException e) {
+            if (e.getMessage().contains("No Insurance Surveyor found with pID")) {
+                System.out.println(e.getMessage());
+            } else {
+                System.out.println("Error updating Insurance Surveyor: " + e.getMessage());
+            }
+        }
+    }
     public void displayAdminMenu () {
 
         while (true) {
@@ -190,6 +234,8 @@ public class SystemAdminView {
             System.out.println("10. Delete an Insurance Surveyor");
             System.out.println("11. Delete a Policy Owner");
             System.out.println("12. Update a Policy Owner");
+            System.out.println("13. Update an Insurance Manager");
+            System.out.println("14. Update an Insurance Surveyor");
             System.out.println("0. Exit");
 
             try {
@@ -207,6 +253,8 @@ public class SystemAdminView {
                     case 10 -> deleteAnInsuranceSurveyor();
                     case 11 -> deleteAPolicyOwner();
                     case 12 -> updatePolicyOwner();
+                    case 13 -> updateInsuranceManager();
+                    case 14 -> updateInsuranceSurveyor();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;
