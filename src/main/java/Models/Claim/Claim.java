@@ -10,6 +10,7 @@ import java.util.Objects;
 public class Claim {
     private String fID;
     private LocalDate claimDate;
+    private String cID;
     private String insuredPerson;
     private InsuranceCard cardNumber;
     private LocalDate examDate;

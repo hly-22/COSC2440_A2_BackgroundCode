@@ -1,7 +1,8 @@
-package OperationManager.Utils;
-
 // user authentication
-public class User {
+public class UserAuthentication {
+    public static void displayLogin() {
+
+    }
     public static String hashPassword(String enteredPassword) {
         // hash enteredPassword --> password
         String password = null;

@@ -1,5 +1,9 @@
 package OperationManager.SystemAdmin;
 
+import Database.CustomerCRUD;
+import Database.DatabaseConnection;
+import Database.ProviderCRUD;
+import Database.SystemAdminCRUD;
 import Models.Customer.Customer;
 import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
@@ -12,16 +16,22 @@ import Models.SystemAdmin.SystemAdmin;
 import OperationManager.Utils.InputChecker;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
 public class SystemAdminOperations {
     private final SystemAdmin systemAdmin = new SystemAdmin();
+    private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
+    private ProviderCRUD providerCRUD = new ProviderCRUD(databaseConnection);
+    private CustomerCRUD customerCRUD = new CustomerCRUD(databaseConnection);
+    private SystemAdminCRUD systemAdminCRUD = new SystemAdminCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
-
 
     // method to update password
     public void updateAdminPassword(String password) {
@@ -117,25 +127,59 @@ public class SystemAdminOperations {
         BigDecimal insuranceFee = scanner.nextBigDecimal();
         newPolicyOwner.setInsuranceFee(insuranceFee);
 
-        System.out.println(newPolicyOwner); // output test
-
-        systemAdmin.addActionHistory(LocalDate.now() + ": add Policy Owner " + newPolicyOwner.getCID());
-        System.out.println(systemAdmin.getActionHistory());
+        boolean createdSuccessfully = customerCRUD.createPolicyOwner(newPolicyOwner);
+        if (createdSuccessfully) {
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": add Policy Owner " + newPolicyOwner.getCID());
+        }
     }
-    public void getPolicyOwner(String cID) {
-        // connect database to execute
+    public PolicyOwner getPolicyOwner(String cID) {
+        try {
+            PolicyOwner policyOwner = customerCRUD.readPolicyOwner(cID);
+            if (policyOwner != null) {
+                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Policy Owner " + cID);
+            }
+            return policyOwner;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error reading Policy Owner from database", e);
+        }
     }
-    public void updatePolicyOwner(String cID) {
-        // find policyOwner by cID: getPolicyOwner(String cID)
-        // test policyOwner
-        PolicyOwner policyOwner = new PolicyOwner("c-0000000", "owner_tester", "090909090","Canada", "tester_owner@gmail.com", "popoipoiu");
+    public void updatePolicyOwner(String cID, String phone, String address, String email, String password) {
+        try {
+            // Check if the policy owner exists
+            PolicyOwner policyOwner = customerCRUD.readPolicyOwner(cID);
+            if (policyOwner == null) {
+                System.out.println("Policy Owner with ID " + cID + " does not exist.");
+                return;
+            }
 
+            // Update the policy owner fields
+            customerCRUD.updatePolicyOwner(cID, phone, address, email, password);
 
+            // Update admin action history
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": update Policy Owner " + cID);
 
+            System.out.println("Policy Owner with ID " + cID + " updated successfully.");
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating Policy Owner", e);
+        }
     }
+
     public void deletePolicyOwner(String cID) {
-
+        try {
+            PolicyOwner policyOwner = customerCRUD.readPolicyOwner(cID);
+            if (policyOwner != null) {
+                // Delete the policy owner
+                customerCRUD.deletePolicyOwner(cID);
+                // Update admin action history
+                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": delete Policy Owner " + cID);
+            } else {
+                System.out.println("Policy Owner with ID " + cID + " does not exist.");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting Policy Owner", e);
+        }
     }
+
 
     // CRUD for policyholders
     public void addPolicyHolder(PolicyOwner policyOwner) {
@@ -160,9 +204,8 @@ public class SystemAdminOperations {
         System.out.println(systemAdmin.getActionHistory());
         policyOwner.addActionHistory(LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to beneficiaries by System Admin");
     }
-    public void getPolicyHolder(String cID) {
 
-    }
+
     public void updatePolicyHolder(String cID) {
         // getPolicyHolder(cID)
     }
@@ -243,19 +286,32 @@ public class SystemAdminOperations {
             return;
         }
 
-        System.out.println(newInsuranceManager);    // output test
-
-        systemAdmin.addActionHistory(LocalDate.now() + ": add Insurance Manager " + newInsuranceManager.getPID());
-        System.out.println(systemAdmin.getActionHistory());
+        boolean createdSuccessfully = providerCRUD.createInsuranceManager(newInsuranceManager);
+        if (createdSuccessfully) {
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": add Insurance Manager " + newInsuranceManager.getPID());
+        }
     }
-    public void getInsuranceManager(String pID) {
-
+    public InsuranceManager getInsuranceManager(String pID) {
+        try {
+            InsuranceManager insuranceManager = providerCRUD.readInsuranceManager(pID);
+            if (insuranceManager != null) {
+                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Insurance Manager " + pID);
+            }
+            return insuranceManager;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error reading Insurance Manager from database", e);
+        }
     }
     public void updateInsuranceManager(String pID) {
 
     }
     public void deleteInsuranceManager(String pID) {
-
+        try {
+            providerCRUD.deleteInsuranceManager(pID);
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": delete Insurance Manager with pID " + pID + " with all associated Insurance Surveyors");
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting Insurance Manager from database", e);
+        }
     }
 
     // CRUD for insurance surveyors
@@ -267,22 +323,34 @@ public class SystemAdminOperations {
             return;
         }
         newInsuranceSurveyor.setInsuranceManager(insuranceManager.getPID());
-        insuranceManager.addToSurveyorList(newInsuranceSurveyor);
 
-        System.out.println(newInsuranceSurveyor);    // output test
-        System.out.println(insuranceManager);   //output test
+        boolean createdSuccessfully = providerCRUD.createInsuranceSurveyor(newInsuranceSurveyor);
+        if (createdSuccessfully) {
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": add Insurance Surveyor " + newInsuranceSurveyor.getPID() + " to Insurance Manager " + insuranceManager.getPID());
+            providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": add Insurance Surveyor " + newInsuranceSurveyor.getPID() + " to surveyor list by System Admin");
+        }
 
-        systemAdmin.addActionHistory(LocalDate.now() + ": add Insurance Surveyor " + newInsuranceSurveyor.getPID() + " to Insurance Manager " + insuranceManager.getPID());
-        System.out.println(systemAdmin.getActionHistory());
-        insuranceManager.addActionHistory(LocalDate.now() + ": add Insurance Surveyor " + newInsuranceSurveyor.getPID() + " to surveyor list by System Admin");
     }
-    public void getInsuranceSurveyor(String pID) {
-
+    public InsuranceSurveyor getInsuranceSurveyor(String pID) {
+        try {
+            InsuranceSurveyor insuranceSurveyor = providerCRUD.readInsuranceSurveyor(pID);
+            if (insuranceSurveyor != null) {
+                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Insurance Surveyor " + pID);
+            }
+            return insuranceSurveyor;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error reading Insurance Surveyor from database", e);
+        }
     }
     public void updateInsuranceSurveyor(String pID) {
 
     }
     public void deleteInsuranceSurveyor(String pID) {
-
+        try {
+            providerCRUD.deleteInsuranceSurveyor(pID);
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": delete Insurance Surveyor " + pID);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting Insurance Surveyor from database", e);
+        }
     }
 }
