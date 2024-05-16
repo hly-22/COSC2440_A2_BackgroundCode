@@ -12,7 +12,14 @@ public class InsuranceCardCRUD {
         this.databaseConnection = databaseConnection;
     }
 
-    public boolean createInsuranceCard(InsuranceCard insuranceCard){
+    public boolean createInsuranceCard(InsuranceCard insuranceCard) {
+        // Check if the insurance card number already exists
+        String cardNumber = insuranceCard.getCardNumber();
+        if (checkInsuranceCardExists(cardNumber)) {
+            System.out.println("Insurance card with card number " + cardNumber + " already exists.");
+            return false;
+        }
+
         String sql = "INSERT INTO insurance_card (card_number, card_holder, policy_owner, expiration_date) VALUES (?, ?, ?, ?)";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -20,16 +27,17 @@ public class InsuranceCardCRUD {
             pstmt.setString(2, insuranceCard.getCardHolder());
             pstmt.setString(3, insuranceCard.getPolicyOwner());
             pstmt.setDate(4, Date.valueOf(insuranceCard.getExpirationDate()));
+
             pstmt.executeUpdate();
+
+            System.out.println("Insurance Card created successfully!");
             return true;
         } catch (SQLException e) {
-            try {
-                throw new SQLException("Error creating insurance card: " + e.getMessage(), e);
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
+
     public InsuranceCard readInsuranceCard(String cardNumber) throws SQLException {
         String sql = "SELECT * FROM insurance_card WHERE card_number = ?";
         try (Connection conn = databaseConnection.connect();
@@ -63,4 +71,24 @@ public class InsuranceCardCRUD {
             throw new SQLException("Error deleting insurance card: " + e.getMessage(), e);
         }
     }
+    private boolean checkInsuranceCardExists(String cardNumber) {
+        String sql = "SELECT EXISTS (" +
+                "    SELECT 1 FROM insurance_card WHERE card_number = ?" +
+                ")";
+
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cardNumber);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean(1); // Returns true if the card number exists in the insurance_card table, false otherwise
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle or log the exception as needed
+        }
+
+        return false; // Return false by default if an exception occurs
+    }
+
 }

@@ -24,7 +24,6 @@ public class SystemAdminView {
         String cID = scanner.nextLine();
         PolicyOwner policyOwner = operations.getPolicyOwner(cID);
         if (policyOwner != null) {
-            System.out.println("Policy Owner Information:");
             System.out.println(policyOwner);
         }
     }
@@ -217,6 +216,15 @@ public class SystemAdminView {
             }
         }
     }
+    public void retrieveAPolicyHolder() {
+
+        System.out.println("Enter cID: ");
+        String cID = scanner.nextLine();
+        PolicyHolder policyHolder = operations.getPolicyHolder(cID);
+        if (policyHolder != null) {
+            System.out.println(policyHolder);
+        }
+    }
     public void displayAdminMenu () {
 
         while (true) {
@@ -236,6 +244,7 @@ public class SystemAdminView {
             System.out.println("12. Update a Policy Owner");
             System.out.println("13. Update an Insurance Manager");
             System.out.println("14. Update an Insurance Surveyor");
+            System.out.println("15. Retrieve a Policy Holder");
             System.out.println("0. Exit");
 
             try {
@@ -255,6 +264,7 @@ public class SystemAdminView {
                     case 12 -> updatePolicyOwner();
                     case 13 -> updateInsuranceManager();
                     case 14 -> updateInsuranceSurveyor();
+                    case 15 -> retrieveAPolicyHolder();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

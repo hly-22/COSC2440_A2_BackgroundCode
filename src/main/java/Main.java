@@ -8,8 +8,8 @@ import java.sql.Connection;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-//        DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
-        DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres", "postgres.kzweuuezlwlmafrfqxqx", "KPi3d~g3nBtJ9gy");
+        DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
+//        DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres", "postgres.kzweuuezlwlmafrfqxqx", "KPi3d~g3nBtJ9gy");
         databaseConnection.connect();
         System.out.println("Database Connected.");
 

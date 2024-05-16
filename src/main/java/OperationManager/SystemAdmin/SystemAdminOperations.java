@@ -187,25 +187,32 @@ public class SystemAdminOperations {
             return;
         }
         newPolicyHolder.setPolicyOwner(policyOwner.getCID());
-//        policyOwner.addToBeneficiaries(newPolicyHolder);
-//        System.out.println(policyOwner);
         customerCRUD.addToBeneficiaries(policyOwner.getCID(), newPolicyHolder.getCID());
 
         InsuranceCard newInsuranceCard = addInsuranceCard(policyOwner);
         newInsuranceCard.setCardHolder(newPolicyHolder.getCID());
-//        System.out.println(newInsuranceCard);
         boolean createInsuranceCardSuccessfully = insuranceCardCRUD.createInsuranceCard(newInsuranceCard);
 
         newPolicyHolder.setInsuranceCardNumber(newInsuranceCard.getCardNumber());
-//        System.out.println(newPolicyHolder);
+        boolean createHolderSuccessfully = customerCRUD.createPolicyHolder(newPolicyHolder);
 
-
-        systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Owner " + policyOwner.getCID());
-        customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to beneficiaries by System Admin");
-        System.out.println("Policy Holder and Insurance Card added successfully!");
-
+        if (createHolderSuccessfully || createInsuranceCardSuccessfully) {
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Owner " + policyOwner.getCID());
+            customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to beneficiaries by System Admin");
+            System.out.println("Policy Holder and Insurance Card added successfully!");
+        }
     }
-
+    public PolicyHolder getPolicyHolder(String cID) {
+        try {
+            PolicyHolder policyHolder = customerCRUD.getPolicyHolder(cID);
+            if (policyHolder != null) {
+                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Policy Holder " + cID);
+            }
+            return policyHolder;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error reading Policy Holder from database", e);
+        }
+    }
 
     public void updatePolicyHolder(String cID) {
         // getPolicyHolder(cID)

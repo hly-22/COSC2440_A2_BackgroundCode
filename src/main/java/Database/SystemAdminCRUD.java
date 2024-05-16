@@ -35,8 +35,6 @@ public class SystemAdminCRUD {
             throw new RuntimeException(e);
         }
     }
-
-
     public void updateAdminActionHistory(String ID, String action) {
         // Retrieve current action history
         String[] currentHistory = getAdminActionHistory(ID);

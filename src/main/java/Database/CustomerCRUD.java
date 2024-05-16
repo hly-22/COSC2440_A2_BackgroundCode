@@ -42,6 +42,7 @@ public class CustomerCRUD {
             return true;
         } catch (SQLException e) {
             String sqlState = e.getSQLState();
+            System.out.println(sqlState);
             if ("23505".equals(sqlState) || "P0001".equals(sqlState)) { // Unique violation or custom exception
                 System.out.println("Duplicate cID detected: " + policyOwner.getCID());
             } else {
@@ -154,38 +155,126 @@ public class CustomerCRUD {
 //        }
 //    }
 
+    private boolean checkPolicyOwnerExists(String policyOwnerCID) {
+        String sql = "SELECT EXISTS (" +
+                "    SELECT 1 FROM policy_owner WHERE c_id = ?" +
+                ")";
 
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, policyOwnerCID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean(1); // Returns true if the cID exists in the policy_owner table, false otherwise
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle or log the exception as needed
+        }
 
+        return false; // Return false by default if an exception occurs
+    }
 
     // CRUD for policyholders
+    public boolean createPolicyHolder(PolicyHolder policyHolder) {
+        // Check if the policy owner exists
+        String policyOwnerCID = policyHolder.getPolicyOwner();
+        if (!checkPolicyOwnerExists(policyOwnerCID)) {
+            System.out.println("Policy Owner with cID " + policyOwnerCID + " does not exist.");
+            return false;
+        }
 
+        String sql = "INSERT INTO policy_holder (c_id, role, full_name, phone, address, email, password, action_history, claim_list, policy_owner, insurance_card_number, dependent_list) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, policyHolder.getCID());
+            pstmt.setString(2, policyHolder.getRole());
+            pstmt.setString(3, policyHolder.getFullName());
+            pstmt.setString(4, policyHolder.getPhone());
+            pstmt.setString(5, policyHolder.getAddress());
+            pstmt.setString(6, policyHolder.getEmail());
+            pstmt.setString(7, policyHolder.getPassword());
+            // Handle action history
+            List<String> actionHistory = policyHolder.getActionHistory();
+            if (actionHistory == null || actionHistory.isEmpty()) {
+                pstmt.setArray(8, conn.createArrayOf("varchar", new String[0]));
+            } else {
+                pstmt.setArray(8, conn.createArrayOf("varchar", actionHistory.toArray()));
+            }
+            // Handle claim list
+            List<String> claimIDs = new ArrayList<>();
+            List<Claim> claimList = policyHolder.getClaimList();
+            if (claimList != null) {
+                for (Claim claim : claimList) {
+                    claimIDs.add(claim.getFID());
+                }
+            }
+            if (claimIDs.isEmpty()) {
+                pstmt.setArray(9, conn.createArrayOf("varchar", new String[0]));
+            } else {
+                pstmt.setArray(9, conn.createArrayOf("varchar", claimIDs.toArray(new String[0])));
+            }
+            pstmt.setString(10, policyHolder.getPolicyOwner());
+            pstmt.setString(11, policyHolder.getInsuranceCardNumber());
+            // Handle dependent list
+            List<String> dependentList = policyHolder.getDependentList();
+            if (dependentList == null || dependentList.isEmpty()) {
+                pstmt.setArray(12, conn.createArrayOf("varchar", new String[0]));
+            } else {
+                pstmt.setArray(12, conn.createArrayOf("varchar", dependentList.toArray()));
+            }
 
+            pstmt.executeUpdate();
 
-//    public PolicyHolder readPolicyHolder(String cID) throws SQLException {
-//        String sql = "SELECT * FROM policy_holder WHERE c_id = ?";
-//        try (Connection conn = databaseConnection.connect();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//            pstmt.setString(1, cID);
-//            try (ResultSet rs = pstmt.executeQuery()) {
-//                if (rs.next()) {
-//                    String role = rs.getString("role");
-//                    String fullName = rs.getString("full_name");
-//                    String phone = rs.getString("phone");
-//                    String address = rs.getString("address");
-//                    String email = rs.getString("email");
-//                    String password = rs.getString("password");
-//                    List<String> actionHistory = Arrays.asList((String[]) rs.getArray("action_history").getArray());
-//                    String policyOwner = rs.getString("policy_owner");
-//                    String insuranceCardNumber = rs.getString("insurance_card_number");
-//                    List<String> dependentList = Arrays.asList((String[]) rs.getArray("dependentlist").getArray());
-//                    return new PolicyHolder(cID, role, fullName, phone, address, email, password, actionHistory, policyOwner, insuranceCardNumber, dependentList);
-//                } else {
-//                    System.out.println("No Policy Holder found with cID: " + cID);
-//                    return null;
-//                }
-//            }
-//        }
-//    }
+            System.out.println("Policy Holder created successfully!");
+            return true;
+        } catch (SQLException e) {
+            String sqlState = e.getSQLState();
+            if ("23505".equals(sqlState) || "P0001".equals(sqlState)) { // Unique violation or custom exception
+                System.out.println("Duplicate cID detected: " + policyHolder.getCID());
+            } else {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+            return false;
+        }
+    }
+    public PolicyHolder getPolicyHolder(String cID) throws SQLException {
+        String sql = "SELECT * FROM policy_holder WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String role = rs.getString("role");
+                    String fullName = rs.getString("full_name");
+                    String phone = rs.getString("phone");
+                    String address = rs.getString("address");
+                    String email = rs.getString("email");
+                    String password = rs.getString("password");
+
+                    String[] actionHistoryArray = (String[]) rs.getArray("action_history").getArray();
+                    List<String> actionHistory = Arrays.asList(actionHistoryArray);
+
+                    String[] claimListArray = (String[]) rs.getArray("claim_list").getArray();
+                    List<Claim> claimList = new ArrayList<>();
+                    for (String fID : claimListArray) {
+                        claimList.add(getClaim(fID)); // Assumes a method getClaim(String fID) exists
+                    }
+
+                    String policyOwner = rs.getString("policy_owner");
+                    String insuranceCardNumber = rs.getString("insurance_card_number");
+
+                    String[] dependentListArray = (String[]) rs.getArray("dependent_list").getArray();
+                    List<String> dependentList = Arrays.asList(dependentListArray);
+
+                    return new PolicyHolder(cID, role, fullName, phone, address, email, password, actionHistory, claimList, policyOwner, insuranceCardNumber, dependentList);
+                } else {
+                    System.out.println("No Policy Holder found with cID: " + cID);
+                    return null;
+                }
+            }
+        }
+    }
 
     public void deletePolicyHolder(String cID) throws SQLException {
         String sql = "DELETE FROM policy_holder WHERE c_id = ?";
