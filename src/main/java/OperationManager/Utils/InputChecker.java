@@ -15,6 +15,11 @@ public class InputChecker {
         String regex = "^p-[0-9]{7}$"; // p- followed by exactly 7 digits
         return pID.matches(regex);
     }
+    // check for valid FID
+    public static boolean isValidFIDFormat(String fID) {
+        String regex = "^f-[0-9]{7}$"; // f- followed by exactly 7 digits
+        return fID.matches(regex);
+    }
     // check for valid phone number
     public static boolean isValidPhoneNumber(String phone) {
         String digitsOnly = phone.replaceAll("[^0-9]", "");

@@ -187,19 +187,21 @@ public class SystemAdminOperations {
             return;
         }
         newPolicyHolder.setPolicyOwner(policyOwner.getCID());
-        customerCRUD.addToBeneficiaries(policyOwner.getCID(), newPolicyHolder.getCID());
 
         InsuranceCard newInsuranceCard = addInsuranceCard(policyOwner);
         newInsuranceCard.setCardHolder(newPolicyHolder.getCID());
-        boolean createInsuranceCardSuccessfully = insuranceCardCRUD.createInsuranceCard(newInsuranceCard);
 
         newPolicyHolder.setInsuranceCardNumber(newInsuranceCard.getCardNumber());
         boolean createHolderSuccessfully = customerCRUD.createPolicyHolder(newPolicyHolder);
 
-        if (createHolderSuccessfully || createInsuranceCardSuccessfully) {
-            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Owner " + policyOwner.getCID());
-            customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to beneficiaries by System Admin");
-            System.out.println("Policy Holder and Insurance Card added successfully!");
+        if (createHolderSuccessfully) {
+            boolean createInsuranceCardSuccessfully = insuranceCardCRUD.createInsuranceCard(newInsuranceCard);
+            if (createInsuranceCardSuccessfully) {
+                customerCRUD.addToBeneficiaries(policyOwner.getCID(), newPolicyHolder.getCID());
+                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Owner " + policyOwner.getCID());
+                customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": add Policy Holder " + newPolicyHolder.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to beneficiaries by System Admin");
+                System.out.println("Policy Holder and Insurance Card added successfully!");
+            }
         }
     }
     public PolicyHolder getPolicyHolder(String cID) {
@@ -233,22 +235,23 @@ public class SystemAdminOperations {
         newDependent.setPolicyHolder(policyHolder.getCID());
         policyHolder.addToDependentList(newDependent);
         policyOwner.addToBeneficiaries(newDependent);
-        System.out.println(policyHolder);   // output test
-        System.out.println(policyOwner);    // output test
 
         InsuranceCard newInsuranceCard = addInsuranceCard(policyOwner);
         newInsuranceCard.setCardHolder(newDependent.getCID());
-        System.out.println(newInsuranceCard);   // output test
-
         newDependent.setInsuranceCardNumber(newInsuranceCard.getCardNumber());
-        System.out.println(newDependent);   // output test
 
-        systemAdmin.addActionHistory(LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Holder " + policyHolder.getCID());
-        System.out.println(systemAdmin.getActionHistory());
-        policyOwner.addActionHistory(LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Holder " + policyHolder.getCID() + " to beneficiaries by System Admin");
-        System.out.println(policyOwner.getActionHistory());
-        policyHolder.addActionHistory(LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to dependent list by System Admin");
+        boolean createDependentSuccessfully = customerCRUD.createDependent(newDependent);
 
+        if (createDependentSuccessfully) {
+            boolean createInsuranceCardSuccessfully = insuranceCardCRUD.createInsuranceCard(newInsuranceCard);
+            if (createInsuranceCardSuccessfully) {
+                customerCRUD.addToDependentList(policyHolder.getCID(), newDependent.getCID());
+                customerCRUD.addToBeneficiaries(policyOwner.getCID(), newDependent.getCID());
+                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Holder " + policyHolder.getCID());
+                customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to Policy Holder " + policyHolder.getCID() + " to beneficiaries by System Admin");
+                customerCRUD.updatePolicyHolderActionHistory(policyHolder.getCID(), LocalDate.now() + ": add Dependent " + newDependent.getCID() + " with Insurance Card " + newInsuranceCard.getCardNumber() + " to dependent list by System Admin");
+            }
+        }
     }
     public void getDependent(String cID) {
 

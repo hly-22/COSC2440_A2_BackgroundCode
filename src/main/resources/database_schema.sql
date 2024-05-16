@@ -49,14 +49,14 @@ CREATE TABLE document (
 CREATE TABLE claim(
     f_id character varying PRIMARY KEY,
     claim_date date,
-    c_id character varying,
     insured_person character varying,
     card_number character varying,
     exam_date date,
     document_list character varying[],
     claim_amount numeric,
     status character varying,
-    receiver_banking_info character varying
+    receiver_banking_info character varying,
+    note character varying
 );
 
 -- Create (parent)customer table

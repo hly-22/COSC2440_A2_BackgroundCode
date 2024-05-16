@@ -38,7 +38,7 @@ public class InsuranceCardCRUD {
         }
     }
 
-    public InsuranceCard readInsuranceCard(String cardNumber) throws SQLException {
+    public InsuranceCard readInsuranceCard(String cardNumber) {
         String sql = "SELECT * FROM insurance_card WHERE card_number = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -55,7 +55,11 @@ public class InsuranceCardCRUD {
                 }
             }
         } catch (SQLException e) {
-            throw new SQLException("Error reading insurance card: " + e.getMessage(), e);
+            try {
+                throw new SQLException("Error reading insurance card: " + e.getMessage(), e);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
     public void deleteInsuranceCard(String cardNumber) throws SQLException {
@@ -71,7 +75,7 @@ public class InsuranceCardCRUD {
             throw new SQLException("Error deleting insurance card: " + e.getMessage(), e);
         }
     }
-    private boolean checkInsuranceCardExists(String cardNumber) {
+    public boolean checkInsuranceCardExists(String cardNumber) {
         String sql = "SELECT EXISTS (" +
                 "    SELECT 1 FROM insurance_card WHERE card_number = ?" +
                 ")";

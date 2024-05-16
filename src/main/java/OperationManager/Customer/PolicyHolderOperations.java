@@ -11,7 +11,6 @@ import OperationManager.Utils.InputChecker;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.Scanner;
 
 public class PolicyHolderOperations implements UserInfoDAO, CustomerClaimDAO {
@@ -98,7 +97,7 @@ public class PolicyHolderOperations implements UserInfoDAO, CustomerClaimDAO {
 
     // methods relating to claims
     @Override
-    public boolean addClaim(Customer customer, Claim claim) {
+    public boolean addClaim(String insuranceCardNumber) {
         return false;
     }
 

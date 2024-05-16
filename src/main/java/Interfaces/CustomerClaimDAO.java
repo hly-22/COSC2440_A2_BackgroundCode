@@ -4,7 +4,7 @@ import Models.Claim.Claim;
 import Models.Customer.Customer;
 
 public interface CustomerClaimDAO {
-    boolean addClaim(Customer customer, Claim claim);
+    boolean addClaim(String insuranceCardNumber);
     boolean getClaimByID(String fID);
     boolean getAllClaimsByCustomer(String cID);
     void getAllClaims();

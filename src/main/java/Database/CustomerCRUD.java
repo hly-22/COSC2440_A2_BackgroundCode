@@ -1,6 +1,7 @@
 package Database;
 
 import Models.Claim.Claim;
+import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
 import Models.Customer.PolicyOwner;
 import Models.Provider.InsuranceManager;
@@ -258,7 +259,7 @@ public class CustomerCRUD {
                     String[] claimListArray = (String[]) rs.getArray("claim_list").getArray();
                     List<Claim> claimList = new ArrayList<>();
                     for (String fID : claimListArray) {
-                        claimList.add(getClaim(fID)); // Assumes a method getClaim(String fID) exists
+//                        claimList.add(getClaim(fID)); // Assumes a method getClaim(String fID) exists
                     }
 
                     String policyOwner = rs.getString("policy_owner");
@@ -284,8 +285,157 @@ public class CustomerCRUD {
             pstmt.executeUpdate();
         }
     }
+    public void addToDependentList(String policyHolderId, String newDependentId) {
+        String sql = "UPDATE policy_holder SET dependent_list = array_append(dependent_list, ?) WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newDependentId);
+            pstmt.setString(2, policyHolderId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void updatePolicyHolderActionHistory(String policyHolderId, String action) {
+        String sql = "UPDATE policy_holder SET action_history = array_append(action_history, ?) WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, action);
+            pstmt.setString(2, policyHolderId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private boolean checkPolicyHolderExists(String policyHolderCID) {
+        String sql = "SELECT EXISTS (" +
+                "    SELECT 1 FROM policy_holder WHERE c_id = ?" +
+                ")";
 
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, policyHolderCID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean(1); // Returns true if the cID exists in the policy_holder table, false otherwise
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle or log the exception as needed
+        }
+
+        return false; // Return false by default if an exception occurs
+    }
 
     // CRUD for dependents
+    public boolean createDependent(Dependent dependent) {
+
+        // Check if the policy holder exists
+        String policyHolderCID = dependent.getPolicyHolder();
+        if (!checkPolicyHolderExists(policyHolderCID)) {
+            System.out.println("Policy Holder with cID " + policyHolderCID + " does not exist.");
+            return false;
+        }
+
+        String sql = "INSERT INTO dependent (c_id, role, full_name, phone, address, email, password, action_history, claim_list, policy_owner, policy_holder, insurance_card_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, dependent.getCID());
+            pstmt.setString(2, dependent.getRole());
+            pstmt.setString(3, dependent.getFullName());
+            pstmt.setString(4, dependent.getPhone());
+            pstmt.setString(5, dependent.getAddress());
+            pstmt.setString(6, dependent.getEmail());
+            pstmt.setString(7, dependent.getPassword());
+            // Handle action history
+            List<String> actionHistory = dependent.getActionHistory();
+            if (actionHistory == null || actionHistory.isEmpty()) {
+                pstmt.setArray(8, conn.createArrayOf("varchar", new String[0]));
+            } else {
+                pstmt.setArray(8, conn.createArrayOf("varchar", actionHistory.toArray()));
+            }
+            // Handle claim list
+            List<String> claimIDs = new ArrayList<>();
+            List<Claim> claimList = dependent.getClaimList();
+            if (claimList != null) {
+                for (Claim claim : claimList) {
+                    claimIDs.add(claim.getFID());
+                }
+            }
+            if (claimIDs.isEmpty()) {
+                pstmt.setArray(9, conn.createArrayOf("varchar", new String[0]));
+            } else {
+                pstmt.setArray(9, conn.createArrayOf("varchar", claimIDs.toArray(new String[0])));
+            }
+            pstmt.setString(10, dependent.getPolicyOwner());
+            pstmt.setString(11, dependent.getPolicyHolder());
+            pstmt.setString(12, dependent.getInsuranceCardNumber());
+
+            int rowsInserted = pstmt.executeUpdate();
+            return rowsInserted > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public void updateDependentActionHistory(String dependentId, String action) {
+        String sql = "UPDATE dependent SET action_history = array_append(action_history, ?) WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, action);
+            pstmt.setString(2, dependentId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void addToClaimList(String cID, String fID) {
+        try (Connection conn = databaseConnection.connect()) {
+            // Check in policy_holder table
+            String policyHolderQuery = "SELECT c_id FROM policy_holder WHERE c_id = ?";
+            try (PreparedStatement pstmtPolicyHolder = conn.prepareStatement(policyHolderQuery)) {
+                pstmtPolicyHolder.setString(1, cID);
+                try (ResultSet rsPolicyHolder = pstmtPolicyHolder.executeQuery()) {
+                    if (rsPolicyHolder.next()) {
+                        updateClaimList(conn, "policy_holder", cID, fID);
+                        return;
+                    }
+                }
+            }
+
+            // Check in dependent table
+            String dependentQuery = "SELECT c_id FROM dependent WHERE c_id = ?";
+            try (PreparedStatement pstmtDependent = conn.prepareStatement(dependentQuery)) {
+                pstmtDependent.setString(1, cID);
+                try (ResultSet rsDependent = pstmtDependent.executeQuery()) {
+                    if (rsDependent.next()) {
+                        updateClaimList(conn, "dependent", cID, fID);
+                        return;
+                    }
+                }
+            }
+
+            System.out.println("No entry found for cID: " + cID);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void updateClaimList(Connection conn, String tableName, String cID, String fID) throws SQLException {
+        String updateQuery = "UPDATE " + tableName + " SET claim_list = array_append(claim_list, ?) WHERE c_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+            pstmt.setString(1, fID);
+            pstmt.setString(2, cID);
+            pstmt.executeUpdate();
+            System.out.println("Added claim " + fID + " to " + tableName + " with cID: " + cID);
+
+            if ("policy_holder".equals(tableName)) {
+                updatePolicyHolderActionHistory(cID, LocalDate.now() + ": add Claim " + fID + " by Policy Owner");
+            } else if ("dependent".equals(tableName)) {
+                updateDependentActionHistory(cID, LocalDate.now() + ": add Claim " + fID + " by Policy Owner");
+            }
+        }
+    }
 
 }

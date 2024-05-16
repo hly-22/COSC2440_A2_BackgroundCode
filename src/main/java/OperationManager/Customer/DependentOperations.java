@@ -15,7 +15,7 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
     private final Scanner scanner = new Scanner(System.in);
 
     @Override
-    public boolean addClaim(Customer customer, Claim claim) {
+    public boolean addClaim(String insuranceCardNumber) {
         return false;   // not available to dependents
     }
 

@@ -4,13 +4,13 @@ import Models.InsuranceCard.InsuranceCard;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class Claim {
     private String fID;
     private LocalDate claimDate;
-    private String cID;
     private String insuredPerson;
     private InsuranceCard cardNumber;
     private LocalDate examDate;
@@ -18,11 +18,11 @@ public class Claim {
     private BigDecimal claimAmount;
     private ClaimStatus status;
     private String receiverBankingInfo;
+    private String note;
 
-    public Claim(String fID, LocalDate claimDate, String cID, String insuredPerson, InsuranceCard cardNumber, LocalDate examDate, List<Document> documentList, BigDecimal claimAmount, ClaimStatus status, String receiverBankingInfo) {
+    public Claim(String fID, LocalDate claimDate, String insuredPerson, InsuranceCard cardNumber, LocalDate examDate, List<Document> documentList, BigDecimal claimAmount, ClaimStatus status, String receiverBankingInfo, String note) {
         this.fID = fID;
         this.claimDate = claimDate;
-        this.cID = cID;
         this.insuredPerson = insuredPerson;
         this.cardNumber = cardNumber;
         this.examDate = examDate;
@@ -30,6 +30,19 @@ public class Claim {
         this.claimAmount = claimAmount;
         this.status = status;
         this.receiverBankingInfo = receiverBankingInfo;
+        this.note = note;
+    }
+    public Claim(String fID, String insuredPerson, InsuranceCard cardNumber, LocalDate examDate, BigDecimal claimAmount, ClaimStatus status) {
+        this.fID = fID;
+        this.claimDate = LocalDate.now();
+        this.insuredPerson = insuredPerson;
+        this.cardNumber = cardNumber;
+        this.examDate = examDate;
+        this.documentList = new ArrayList<>();
+        this.claimAmount = claimAmount;
+        this.status = status;
+        this.receiverBankingInfo = null;
+        this.note = null;
     }
 
     public String getFID() {
@@ -88,8 +101,8 @@ public class Claim {
         this.claimAmount = claimAmount;
     }
 
-    public ClaimStatus getStatus() {
-        return status;
+    public String getStatus() {
+        return String.valueOf(status);
     }
 
     public void setStatus(ClaimStatus status) {
@@ -112,6 +125,18 @@ public class Claim {
     }
     public boolean getDocument(Document document) {
         return false;
+    }
+
+    public void setReceiverBankingInfo(String receiverBankingInfo) {
+        this.receiverBankingInfo = receiverBankingInfo;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 
     @Override
@@ -138,13 +163,8 @@ public class Claim {
                 ", claimAmount=" + claimAmount +
                 ", status=" + status +
                 ", receiverBankingInfo='" + receiverBankingInfo + '\'' +
+                ", note='" + note + '\'' +
                 '}';
     }
 }
 
-enum ClaimStatus {
-    NEW,
-    PROCESSING,
-    APPROVED,
-    REJECTED
-}
