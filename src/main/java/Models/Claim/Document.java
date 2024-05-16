@@ -7,11 +7,18 @@ public class Document {
     private String convertFileName;
     private String URL;
 
+    public Document(String documentID, String fID, String fileName, String URL) {
+        this.documentID = documentID;
+        this.fID = fID;
+        this.fileName = fileName;
+        this.convertFileName = setConvertFileName(documentID, fID, fileName);
+        this.URL = URL;
+    }
     public Document(String documentID, String fID, String fileName, String convertFileName, String URL) {
         this.documentID = documentID;
         this.fID = fID;
         this.fileName = fileName;
-        this.convertFileName = setConvertFileName(fID, fileName);
+        this.convertFileName = convertFileName;
         this.URL = URL;
     }
 
@@ -43,8 +50,8 @@ public class Document {
         return convertFileName;
     }
 
-    public String setConvertFileName(String fID, String fileName) {
-        return fID + "_" + fileName + ".pdf";
+    public String setConvertFileName(String documentID, String fID, String fileName) {
+        return documentID + "_" + fID + "_" + fileName + ".pdf";
     }
 
     public String getURL() {
