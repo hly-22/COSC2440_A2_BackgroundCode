@@ -85,10 +85,18 @@ public class ClaimCRUD {
                             rs.getString("policy_owner"),
                             rs.getDate("expiration_date").toLocalDate()
                     );
+                } else {
+                    System.out.println("No Insurance Card found with card number: " + cardNumber);
+                    return null;
                 }
             }
+        } catch (SQLException e) {
+            try {
+                throw new SQLException("Error reading insurance card: " + e.getMessage(), e);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
-        return null; // Return null if no insurance card found with the given card number
     }
     private List<Document> getDocumentListByFID(String fID) throws SQLException {
         List<Document> documentList = new ArrayList<>();

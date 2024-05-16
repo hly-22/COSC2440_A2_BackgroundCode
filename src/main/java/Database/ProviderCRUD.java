@@ -16,6 +16,25 @@ public class ProviderCRUD {
         this.databaseConnection = databaseConnection;
     }
 
+    public List<String> getActionHistory(String cID) {
+        List<String> actionHistory = new ArrayList<>();
+        String sql = "SELECT action_history FROM customer WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Array actionHistoryArray = rs.getArray("action_history");
+                if (actionHistoryArray != null) {
+                    actionHistory = Arrays.asList((String[]) actionHistoryArray.getArray());
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving action history from database", e);
+        }
+        return actionHistory;
+    }
     // CRUD for insurance managers
     public boolean createInsuranceManager(InsuranceManager insuranceManager) {
         String sql = "INSERT INTO insurance_manager (p_id, role, full_name, password, action_history, surveyor_list) VALUES (?, ?, ?, ?, ?, ?)";
@@ -273,6 +292,25 @@ public class ProviderCRUD {
             throw new RuntimeException(e);
         }
     }
+    public List<String> getSurveyorList(String insuranceManagerPID) {
+        List<String> surveyorList = new ArrayList<>();
+        String sql = "SELECT surveyor_list FROM insurance_manager WHERE p_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, insuranceManagerPID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Array surveyorArray = rs.getArray("surveyor_list");
+                if (surveyorArray != null) {
+                    surveyorList = Arrays.asList((String[]) surveyorArray.getArray());
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving surveyor list from database", e);
+        }
+        return surveyorList;
+    }
     private void removeSurveyorFromList(String surveyorID) throws SQLException {
         String selectSQL = "SELECT p_id, surveyor_list FROM insurance_manager WHERE ? = ANY(surveyor_list)";
         String updateSQL = "UPDATE insurance_manager SET surveyor_list = ? WHERE p_id = ?";
@@ -314,7 +352,6 @@ public class ProviderCRUD {
             throw new RuntimeException(e);
         }
     }
-
     public void updateSurveyorActionHistory(String pID, String action) {
         // Retrieve current action history
         String[] currentHistory = getSurveyorActionHistory(pID);
