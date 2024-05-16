@@ -99,9 +99,9 @@ CREATE TABLE dependent (
 ALTER TABLE claim
     ADD FOREIGN KEY (card_number) REFERENCES insurance_card (card_number);
 
--- Alter claim table (c_id) to REFERENCE customer (c_id)
+-- Alter claim table (insured_person) to REFERENCE customer (c_id)
 ALTER TABLE claim
-    ADD FOREIGN KEY (c_id) REFERENCES customer(c_id);
+    ADD FOREIGN KEY (insured_person) REFERENCES customer(c_id);
 
 -- Alter document table (f_id) to REFERENCE claim (f_id)
 ALTER TABLE document
