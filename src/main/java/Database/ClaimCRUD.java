@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ClaimCRUD {
@@ -119,5 +120,89 @@ public class ClaimCRUD {
         }
         return documentList;
     }
+    public boolean deleteClaim(String fID) {
+        // First, retrieve the claim to get its details, including the associated cID and documents
+        Claim claim;
+        try {
+            claim = readClaim(fID);
+            if (claim == null) {
+                System.out.println("No claim found with fID: " + fID);
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
 
+        String cID = claim.getInsuredPerson();
+
+        // Remove the claim from the claim_list of the related customer (policyholder or dependent)
+        try {
+            removeFromClaimList(cID, fID);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // Delete associated documents
+        String sqlDeleteDocuments = "DELETE FROM document WHERE f_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sqlDeleteDocuments)) {
+            pstmt.setString(1, fID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // Delete the claim
+        String sqlDeleteClaim = "DELETE FROM claim WHERE f_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sqlDeleteClaim)) {
+            pstmt.setString(1, fID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // Update action history for the related customer
+        String updateActionHistorySQL = "UPDATE customer SET action_history = array_append(action_history, ?) WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(updateActionHistorySQL)) {
+            String action = LocalDate.now() + ": claim " + fID + " deleted.";
+            pstmt.setString(1, action);
+            pstmt.setString(2, cID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        System.out.println("Claim with fID " + fID + " deleted successfully.");
+        return true;
+    }
+    private void removeFromClaimList(String cID, String fID) throws SQLException {
+        String getClaimListSQL = "SELECT claim_list FROM customer WHERE c_id = ?";
+        String updateClaimListSQL = "UPDATE customer SET claim_list = ? WHERE c_id = ?";
+
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement getPstmt = conn.prepareStatement(getClaimListSQL);
+             PreparedStatement updatePstmt = conn.prepareStatement(updateClaimListSQL)) {
+            getPstmt.setString(1, cID);
+            try (ResultSet rs = getPstmt.executeQuery()) {
+                if (rs.next()) {
+                    String[] claimList = (String[]) rs.getArray("claim_list").getArray();
+                    List<String> updatedClaimList = new ArrayList<>(Arrays.asList(claimList));
+                    updatedClaimList.remove(fID);
+
+                    updatePstmt.setArray(1, conn.createArrayOf("varchar", updatedClaimList.toArray(new String[0])));
+                    updatePstmt.setString(2, cID);
+                    updatePstmt.executeUpdate();
+                }
+            }
+        }
+    }
+
+    // udpate claim
 }

@@ -13,13 +13,9 @@ import Models.SystemAdmin.SystemAdmin;
 import OperationManager.Utils.InputChecker;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner;
 
 public class SystemAdminOperations {
@@ -130,21 +126,16 @@ public class SystemAdminOperations {
         }
     }
     public PolicyOwner getPolicyOwner(String cID) {
-        try {
-            PolicyOwner policyOwner = customerCRUD.readPolicyOwner(cID);
-            if (policyOwner != null) {
-                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Policy Owner " + cID);
-            }
-            return policyOwner;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error reading Policy Owner from database", e);
+        PolicyOwner policyOwner = customerCRUD.readPolicyOwner(cID);
+        if (policyOwner != null) {
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Policy Owner " + cID);
         }
+        return policyOwner;
     }
     public void updatePolicyOwner(String cID, String phone, String address, String email, String password) {
         try {
             // Check if the policy owner exists
-            PolicyOwner policyOwner = customerCRUD.readPolicyOwner(cID);
-            if (policyOwner == null) {
+            if (!customerCRUD.checkEntityExists("policy_owner", cID)) {
                 System.out.println("Policy Owner with ID " + cID + " does not exist.");
                 return;
             }
@@ -160,20 +151,16 @@ public class SystemAdminOperations {
             throw new RuntimeException("Error updating Policy Owner", e);
         }
     }
-
     public void deletePolicyOwner(String cID) {
-        try {
-            PolicyOwner policyOwner = customerCRUD.readPolicyOwner(cID);
-            if (policyOwner != null) {
-                // Delete the policy owner
-                customerCRUD.deletePolicyOwner(cID);
+        PolicyOwner policyOwner = customerCRUD.readPolicyOwner(cID);
+        if (policyOwner != null) {
+            // Delete the policy owner
+            if (customerCRUD.deletePolicyOwner(cID)) {
                 // Update admin action history
                 systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": delete Policy Owner " + cID);
-            } else {
-                System.out.println("Policy Owner with ID " + cID + " does not exist.");
             }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error deleting Policy Owner", e);
+        } else {
+            System.out.println("Policy Owner with ID " + cID + " does not exist.");
         }
     }
 
@@ -205,26 +192,64 @@ public class SystemAdminOperations {
         }
     }
     public PolicyHolder getPolicyHolder(String cID) {
+        PolicyHolder policyHolder = customerCRUD.getPolicyHolder(cID);
+        if (policyHolder != null) {
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Policy Holder " + cID);
+        }
+        return policyHolder;
+    }
+    public void updatePolicyHolder(String cID, String phone, String address, String email, String password) {
         try {
+            // Check if the policyholder exists
             PolicyHolder policyHolder = customerCRUD.getPolicyHolder(cID);
-            if (policyHolder != null) {
-                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Policy Holder " + cID);
+            if (policyHolder == null) {
+                System.out.println("Policy Holder with ID " + cID + " does not exist.");
+                return;
             }
-            return policyHolder;
+
+            // Update the policy owner fields
+            customerCRUD.updatePolicyHolder(cID, phone, address, email, password);
+
+            // Update admin action history
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": update Policy Holder " + cID);
+
+            System.out.println("Policy Holder with ID " + cID + " updated successfully.");
         } catch (SQLException e) {
-            throw new RuntimeException("Error reading Policy Holder from database", e);
+            throw new RuntimeException("Error updating Policy Holder", e);
         }
     }
-
-    public void updatePolicyHolder(String cID) {
-        // getPolicyHolder(cID)
-    }
     public void deletePolicyHolder(String cID) {
-        // getPolicyHOlder(cID)
+        try {
+            // Check if the customer with the given cID is a policy holder
+            if (customerCRUD.checkEntityExists("policy_holder", cID)) {
+                // Delete the policy holder
+                customerCRUD.deletePolicyHolder(cID);
+                // Update system admin action history
+                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": delete Policy Holder " + cID);
+                System.out.println("Policy Holder with cID " + cID + " deleted successfully.");
+
+                // Since a policy holder is deleted, delete their dependents as well
+                customerCRUD.deleteDependentsByPolicyHolder(cID);
+            } else {
+                // If the customer is not a policyholder, print appropriate message
+                System.out.println("Policy Holder with cID " + cID + " does not exist.");
+            }
+        } catch (SQLException e) {
+            // Handle any SQL exceptions
+            throw new RuntimeException("Error deleting Policy Holder", e);
+        }
     }
 
     // CRUD for dependents
     public void addDependent(PolicyOwner policyOwner, PolicyHolder policyHolder) {
+
+        if (!customerCRUD.checkEntityExists("policy_owner", policyOwner.getCID())) {
+            System.out.println("Policy Owner does not exist.");
+            return;
+        } else if (!customerCRUD.checkEntityExists("policy_holder", policyHolder.getCID())) {
+            System.out.println("Policy Holder does not exist.");
+            return;
+        }
 
         Dependent newDependent = (Dependent) addCustomer("Dependent");
         if (newDependent == null) {
@@ -237,6 +262,10 @@ public class SystemAdminOperations {
         policyOwner.addToBeneficiaries(newDependent);
 
         InsuranceCard newInsuranceCard = addInsuranceCard(policyOwner);
+        if (newInsuranceCard == null) {
+            System.out.println("Invalid input. Try again");
+            return;
+        }
         newInsuranceCard.setCardHolder(newDependent.getCID());
         newDependent.setInsuranceCardNumber(newInsuranceCard.getCardNumber());
 
@@ -253,14 +282,46 @@ public class SystemAdminOperations {
             }
         }
     }
-    public void getDependent(String cID) {
-
+    public Dependent getDependent(String cID) {
+        Dependent dependent = customerCRUD.readDependent(cID);
+        if (dependent != null) {
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Dependent " + cID);
+        } else {
+            System.out.println("Dependent with cID " + cID + " not found.");
+        }
+        return dependent;
     }
-    public void updateDependent(String cID) {
+    public void updateDependent(String cID, String phone, String address, String email, String password) {
+        try {
+            // Check if the dependent exists
+            Dependent dependent = customerCRUD.readDependent(cID);
+            if (dependent == null) {
+                System.out.println("Dependent with ID " + cID + " does not exist.");
+                return;
+            }
 
+            // Update the policy owner fields
+            customerCRUD.updateDependent(cID, phone, address, email, password);
+
+            // Update admin action history
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": update Dependent " + cID);
+
+            System.out.println("Dependent with ID " + cID + " updated successfully.");
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating Dependent", e);
+        }
     }
     public void deleteDependent(String cID) {
-
+        // Check if the customer with the given cID is a dependent
+        if (customerCRUD.checkEntityExists("dependent", cID)) {
+            if (customerCRUD.deleteDependent(cID)) {
+                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": delete Dependent " + cID);
+                System.out.println("Dependent with cID " + cID + " deleted successfully.");
+            }
+        } else {
+            // If the customer is not a dependent, print appropriate message
+            System.out.println("Dependent with cID " + cID + " does not exist.");
+        }
     }
 
     // CRUD for insurance managers

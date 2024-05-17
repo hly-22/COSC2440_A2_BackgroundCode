@@ -1,5 +1,6 @@
 package ViewManager.SystemAdmin;
 
+import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
 import Models.Customer.PolicyOwner;
 import Models.Provider.InsuranceManager;
@@ -40,7 +41,6 @@ public class SystemAdminView {
             System.out.println("Deletion canceled.");
         }
     }
-
     public static void addAPolicyHolder() {
 
         System.out.println();
@@ -65,14 +65,8 @@ public class SystemAdminView {
         String policyHolderCID = scanner.nextLine();
         // find if policyHolder exist in policyOwner beneficiaries
         // test policyHolder
-        PolicyHolder policyHolder = new PolicyHolder(policyHolderCID, "9090909090", new ArrayList<>());
-//        if (policyOwner.getBeneficiaries() != null) {
-//            for (String beneCID : policyOwner.getBeneficiaries()) {
-//                if (policyHolderCID.equals(beneCID)) {
-//                    policyHolder = new PolicyHolder(null, null, null);  // findBeneficiaryByCID
-//                }
-//            }
-//        }
+        PolicyHolder policyHolder = new PolicyHolder(policyHolderCID);
+
 
         operations.addDependent(policyOwner, policyHolder);
     }
@@ -158,17 +152,32 @@ public class SystemAdminView {
     public void updatePolicyOwner() {
 
         System.out.println("Enter Policy Owner ID to update:");
-        String pID = scanner.nextLine();
+        String cID = scanner.nextLine();
+        if (!InputChecker.isValidCIDFormat(cID)) {
+            System.out.println("Invalid customer ID format.");
+            return;
+        }
+
         System.out.println("Enter new phone number:");
         String phone = scanner.nextLine();
+        if (!InputChecker.isValidPhoneNumber(phone)) {
+            System.out.println("Invalid phone number format.");
+            return;
+        }
+
         System.out.println("Enter new address:");
         String address = scanner.nextLine();
         System.out.println("Enter new email:");
         String email = scanner.nextLine();
+        if (!InputChecker.isValidEmailAddress(email)) {
+            System.out.println("Invalid email format.");
+            return;
+        }
+
         System.out.println("Enter new password:");
         String password = scanner.nextLine();
 
-        operations.updatePolicyOwner(pID, phone, address, email, password);
+        operations.updatePolicyOwner(cID, phone, address, email, password);
         System.out.println("Policy Owner updated successfully!");
 
     }
@@ -225,6 +234,96 @@ public class SystemAdminView {
             System.out.println(policyHolder);
         }
     }
+    public void retrieveADependent() {
+        System.out.println("Enter cID: ");
+        String cID = scanner.nextLine();
+        Dependent dependent = operations.getDependent(cID);
+        if (dependent != null) {
+            System.out.println(dependent);
+        }
+    }
+    public void updatePolicyHolder() {
+        System.out.println("Enter Policy Holder ID to update:");
+        String cID = scanner.nextLine();
+        if (!InputChecker.isValidCIDFormat(cID)) {
+            System.out.println("Invalid customer ID format.");
+            return;
+        }
+
+        System.out.println("Enter new phone number:");
+        String phone = scanner.nextLine();
+        if (!InputChecker.isValidPhoneNumber(phone)) {
+            System.out.println("Invalid phone number format.");
+            return;
+        }
+
+        System.out.println("Enter new address:");
+        String address = scanner.nextLine();
+        System.out.println("Enter new email:");
+        String email = scanner.nextLine();
+        if (!InputChecker.isValidEmailAddress(email)) {
+            System.out.println("Invalid email format.");
+            return;
+        }
+
+        System.out.println("Enter new password:");
+        String password = scanner.nextLine();
+
+        operations.updatePolicyHolder(cID, phone, address, email, password);
+        System.out.println("Policy Holder updated successfully!");
+    }
+    public void updateDependent() {
+        System.out.println("Enter Dependent ID to update:");
+        String cID = scanner.nextLine();
+        if (!InputChecker.isValidCIDFormat(cID)) {
+            System.out.println("Invalid customer ID format.");
+            return;
+        }
+
+        System.out.println("Enter new phone number:");
+        String phone = scanner.nextLine();
+        if (!InputChecker.isValidPhoneNumber(phone)) {
+            System.out.println("Invalid phone number format.");
+            return;
+        }
+
+        System.out.println("Enter new address:");
+        String address = scanner.nextLine();
+        System.out.println("Enter new email:");
+        String email = scanner.nextLine();
+        if (!InputChecker.isValidEmailAddress(email)) {
+            System.out.println("Invalid email format.");
+            return;
+        }
+
+        System.out.println("Enter new password:");
+        String password = scanner.nextLine();
+
+        operations.updateDependent(cID, phone, address, email, password);
+        System.out.println("Dependent updated successfully!");
+    }
+    public void deleteAPolicyHolder() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the cID of the Policy Holder to delete:");
+        String cID = scanner.nextLine().trim();
+
+        // Confirm deletion with the user
+        System.out.println("Are you sure you want to delete the Policy Holder with cID " + cID + "? (yes/no)");
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+
+        if (confirmation.equalsIgnoreCase("yes")) {
+            operations.deletePolicyHolder(cID);
+        } else {
+            System.out.println("Deletion cancelled.");
+        }
+    }
+    public void deleteADependent() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the cID of the Dependent to delete:");
+        String cID = scanner.nextLine().trim();
+
+        operations.deleteDependent(cID);
+    }
     public void displayAdminMenu () {
 
         while (true) {
@@ -245,6 +344,11 @@ public class SystemAdminView {
             System.out.println("13. Update an Insurance Manager");
             System.out.println("14. Update an Insurance Surveyor");
             System.out.println("15. Retrieve a Policy Holder");
+            System.out.println("16. Retrieve a Dependent");
+            System.out.println("17. Update a Policy Holder");
+            System.out.println("18. Update a Dependent");
+            System.out.println("19. Delete a Policy Holder");
+            System.out.println("20. Delete a Dependent");
             System.out.println("0. Exit");
 
             try {
@@ -265,6 +369,11 @@ public class SystemAdminView {
                     case 13 -> updateInsuranceManager();
                     case 14 -> updateInsuranceSurveyor();
                     case 15 -> retrieveAPolicyHolder();
+                    case 16 -> retrieveADependent();
+                    case 17 -> updatePolicyHolder();
+                    case 18 -> updateDependent();
+                    case 19 -> deleteAPolicyHolder();
+                    case 20 -> deleteADependent();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

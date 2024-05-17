@@ -13,11 +13,11 @@ public class Main {
         databaseConnection.connect();
         System.out.println("Database Connected.");
 
-//        SystemAdminView adminView = new SystemAdminView();
-//        adminView.displayAdminMenu();
+        SystemAdminView adminView = new SystemAdminView();
+        adminView.displayAdminMenu();
 
-        PolicyOwnerView policyOwnerView = new PolicyOwnerView();
-        policyOwnerView.displayPolicyOwnerMenu();
+//        PolicyOwnerView policyOwnerView = new PolicyOwnerView();
+//        policyOwnerView.displayPolicyOwnerMenu();
 
 //        PolicyHolderView policyHolderView = new PolicyHolderView();
 //        policyHolderView.displayPolicyHolderMenu();

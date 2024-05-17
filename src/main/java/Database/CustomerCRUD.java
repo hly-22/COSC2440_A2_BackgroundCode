@@ -7,7 +7,6 @@ import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
 import Models.Customer.PolicyOwner;
 import Models.InsuranceCard.InsuranceCard;
-import Models.Provider.InsuranceManager;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -53,7 +52,7 @@ public class CustomerCRUD {
             return false;
         }
     }
-    public PolicyOwner readPolicyOwner(String cID) throws SQLException {
+    public PolicyOwner readPolicyOwner(String cID) {
         String sql = "SELECT * FROM policy_owner WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -76,9 +75,11 @@ public class CustomerCRUD {
                     return null;
                 }
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
-    public void updatePolicyOwner(String pID, String phone, String address, String email, String password) throws SQLException {
+    public void updatePolicyOwner(String cID, String phone, String address, String email, String password) throws SQLException {
         String sql = "UPDATE policy_owner SET phone = ?, address = ?, email = ?, password = ? WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -86,7 +87,7 @@ public class CustomerCRUD {
             pstmt.setString(2, address);
             pstmt.setString(3, email);
             pstmt.setString(4, password);
-            pstmt.setString(5, pID);
+            pstmt.setString(5, cID);
             pstmt.executeUpdate();
         }
     }
@@ -100,7 +101,7 @@ public class CustomerCRUD {
             if (rowsDeleted > 0) {
                 System.out.println("Policy Owner " + policyOwnerCID + " deleted successfully.");
 
-                // Also delete associated policy holders and dependents
+                // Also delete associated policyholders and dependents
                 deleteBeneficiaries(policyOwnerCID);
 
                 return true;
@@ -174,47 +175,90 @@ public class CustomerCRUD {
         }
         return beneficiaries;
     }
-    public boolean removeFromBeneficiaries(String policyOwnerCID, String beneficiaryCID) {
-        boolean removed = false;
-        if (isPolicyHolder(beneficiaryCID)) {
-            removed = deletePolicyHolder(beneficiaryCID);
-            if (removed) {
-                try {
-                    deleteDependentsOfPolicyHolder(beneficiaryCID);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    throw new RuntimeException("Error deleting dependents of policy holder", e);
-                }
-            }
-        } else if (isDependent(beneficiaryCID)) {
-            removed = deleteDependent(beneficiaryCID);
-        }
-        return removed;
-    }
-    private boolean checkPolicyOwnerExists(String policyOwnerCID) {
-        String sql = "SELECT EXISTS (" +
-                "    SELECT 1 FROM policy_owner WHERE c_id = ?" +
-                ")";
+    private boolean removeFromBeneficiaries(String beneficiaryCID) {
 
+        // Retrieve the list of beneficiaries from the database
+        PolicyOwner policyOwner = readPolicyOwner(getPolicyOwnerCIDFromBeneficiary(beneficiaryCID));
+        List<String> beneficiaries = new ArrayList<>(policyOwner.getBeneficiaries());
+
+        // If the list is not null and contains the beneficiaryCID, remove it
+        if (beneficiaries != null && beneficiaries.contains(beneficiaryCID)) {
+            beneficiaries.remove(beneficiaryCID);
+
+            // Update the list of beneficiaries in the database
+            try (Connection conn = databaseConnection.connect();
+                 PreparedStatement pstmt = conn.prepareStatement("UPDATE policy_owner SET beneficiaries = ? WHERE c_id = ?")) {
+                Array beneficiariesArray = conn.createArrayOf("varchar", beneficiaries.toArray());
+                pstmt.setArray(1, beneficiariesArray);
+                pstmt.setString(2, policyOwner.getCID());
+                pstmt.executeUpdate();
+                System.out.println("Beneficiary with CID " + beneficiaryCID + " removed from the beneficiaries list.");
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Error removing beneficiary from beneficiaries list", e);
+            }
+        } else {
+            System.out.println("Beneficiary with CID " + beneficiaryCID + " is not in the beneficiaries list.");
+            return false;
+        }
+    }
+    public String getPolicyOwnerFromDependent(String cID) {
+        String policyOwnerCID = null;
+        String sql = "SELECT policy_owner FROM dependent WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, policyOwnerCID);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getBoolean(1); // Returns true if the cID exists in the policy_owner table, false otherwise
+            pstmt.setString(1, cID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    policyOwnerCID = rs.getString("policy_owner");
+                }
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle or log the exception as needed
+            e.printStackTrace();
+            throw new RuntimeException("Error getting policy owner from dependent", e);
+        }
+        return policyOwnerCID;
+    }
+    private String getPolicyOwnerFromPolicyHolder(String cID) {
+        String policyOwnerCID = null;
+        String sql = "SELECT policy_owner FROM policy_holder WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    policyOwnerCID = rs.getString("policy_owner");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving policy owner CID from policy holder", e);
+        }
+        return policyOwnerCID;
+    }
+    private String getPolicyOwnerCIDFromBeneficiary(String beneficiaryCID) {
+        // Look for the policy owner in the dependent table
+        String policyOwnerCID = getPolicyOwnerFromDependent(beneficiaryCID);
+        if (policyOwnerCID != null) {
+            return policyOwnerCID;
         }
 
-        return false; // Return false by default if an exception occurs
+        // Look for the policy owner in the policy holder table
+        policyOwnerCID = getPolicyOwnerFromPolicyHolder(beneficiaryCID);
+        if (policyOwnerCID != null) {
+            return policyOwnerCID;
+        }
+
+        // Return null if the beneficiary CID is not associated with any policy owner
+        return null;
     }
 
     // CRUD for policyholders
     public boolean createPolicyHolder(PolicyHolder policyHolder) {
         // Check if the policy owner exists
         String policyOwnerCID = policyHolder.getPolicyOwner();
-        if (!checkPolicyOwnerExists(policyOwnerCID)) {
+        if (!checkEntityExists("policy_owner", policyOwnerCID)) {
             System.out.println("Policy Owner with cID " + policyOwnerCID + " does not exist.");
             return false;
         }
@@ -274,7 +318,7 @@ public class CustomerCRUD {
             return false;
         }
     }
-    public PolicyHolder getPolicyHolder(String cID) throws SQLException {
+    public PolicyHolder getPolicyHolder(String cID){
         String sql = "SELECT * FROM policy_holder WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -309,20 +353,74 @@ public class CustomerCRUD {
                     return null;
                 }
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
-    public boolean deletePolicyHolder(String policyHolderCID) {
+    public void updatePolicyHolder(String cID, String phone, String address, String email, String password) throws SQLException {
+        String sql = "UPDATE policy_holder SET phone = ?, address = ?, email = ?, password = ? WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, phone);
+            pstmt.setString(2, address);
+            pstmt.setString(3, email);
+            pstmt.setString(4, password);
+            pstmt.setString(5, cID);
+            pstmt.executeUpdate();
+        }
+    }
+    public boolean deletePolicyHolder(String cID) {
+        // Check if the policy holder exists in the policy holder table
+        if (!checkEntityExists("policy_holder", cID)) {
+            System.out.println("Policy Holder with CID " + cID + " does not exist.");
+            return false;
+        }
+
+        // Retrieve the policy holder's dependents and delete from the database
+        List<String> dependentList = getDependentList(cID);
+        boolean dependentsDeleted = deleteDependents(dependentList);
+
+        // Remove the policy holder from the beneficiaries of policy owners
+        boolean removedFromBeneficiaries = removeFromBeneficiaries(cID);
+
+        // Remove the insurance card associated with the policy holder
+        boolean removedInsuranceCard = deleteInsuranceCard(cID);
+
+        // Delete the policy holder
+        boolean policyHolderDeleted = deletePolicyHolderFromTable(cID);
+
+
+        // Return true only if all removal operations and deletion from the table were successful
+        return policyHolderDeleted && dependentsDeleted && removedFromBeneficiaries && removedInsuranceCard;
+    }
+
+    private boolean deletePolicyHolderFromTable(String cID) {
+        // Delete the policy holder from the policy holder table
         String sql = "DELETE FROM policy_holder WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, policyHolderCID);
-            int rowsDeleted = pstmt.executeUpdate();
-            return rowsDeleted > 0;
+            pstmt.setString(1, cID);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Error deleting policy holder", e);
+            throw new RuntimeException("Error deleting policy holder from the policy holder table", e);
         }
     }
+
+    private boolean deleteDependents(List<String> dependentList) {
+        // Delete all dependents associated with the policyholder
+        boolean allDeleted = true;
+        for (String dependentCID : dependentList) {
+            boolean deleted = deleteDependent(dependentCID);
+            if (!deleted) {
+                allDeleted = false;
+                System.out.println("Failed to delete dependent with CID " + dependentCID);
+            }
+        }
+        return allDeleted;
+    }
+
     public void addToDependentList(String policyHolderId, String newDependentId) {
         String sql = "UPDATE policy_holder SET dependent_list = array_append(dependent_list, ?) WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
@@ -353,46 +451,57 @@ public class CustomerCRUD {
         }
         return dependentList;
     }
-    public boolean removeFromDependentList(String policyHolderCID, String dependentCID) {
-        // Check if the given policyholder CID exists
-        if (!checkPolicyHolderExists(policyHolderCID)) {
-            System.out.println("Policy Holder with CID " + policyHolderCID + " does not exist.");
-            return false;
+    private PolicyHolder getPolicyHolderByDependentCID(String cID) {
+        // Retrieve the dependent using its CID
+        Dependent dependent = readDependent(cID);
+
+        // If the dependent exists and has an associated policy holder, return the policy holder
+        if (dependent != null) {
+            String policyHolderCID = dependent.getPolicyHolder();
+            if (policyHolderCID != null) {
+                // Ensure the policy holder CID is not the same as the dependent's CID
+                if (!policyHolderCID.equals(cID)) {
+                    return getPolicyHolder(policyHolderCID);
+                }
+            }
         }
 
-        // Retrieve the current dependent list of the policyholder from the database
-        List<String> dependentList = getDependentList(policyHolderCID);
+        // Return null if the dependent or its associated policy holder is not found
+        return null;
+    }
+    private boolean removeFromDependentList(String cID) {
+        // Retrieve the associated policyholder
+        PolicyHolder policyHolder = getPolicyHolderByDependentCID(cID);
 
-        // If the dependent list is null or empty, there's nothing to remove
-        if (dependentList == null || dependentList.isEmpty()) {
-            System.out.println("No dependents found for Policy Holder with CID " + policyHolderCID);
-            return false;
-        }
+        if (policyHolder != null) {
+            // Retrieve the current dependent list of the policyholder
+            List<String> dependentList = new ArrayList<>(policyHolder.getDependentList());
 
-        // Remove the dependent CID from the dependent list
-        boolean removed = dependentList.remove(dependentCID);
-
-        if (removed) {
-            // Update the database with the modified dependent list
-            try (Connection conn = databaseConnection.connect();
-                 PreparedStatement pstmt = conn.prepareStatement(
-                         "UPDATE policy_holder SET dependent_list = ? WHERE c_id = ?")) {
-                Array dependentArray = conn.createArrayOf("varchar", dependentList.toArray());
-                pstmt.setArray(1, dependentArray);
-                pstmt.setString(2, policyHolderCID);
-                pstmt.executeUpdate();
-                System.out.println("Dependent with CID " + dependentCID + " removed from Policy Holder with CID "
-                        + policyHolderCID + "'s dependent list.");
-                return true;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                throw new RuntimeException("Error removing dependent from dependent list", e);
+            // If the dependent list contains the dependent's cID, remove it
+            if (dependentList.contains(cID)) {
+                dependentList.remove(cID);
+                // Update the list of dependents of the policy holder in the database
+                try (Connection conn = databaseConnection.connect();
+                     PreparedStatement pstmt = conn.prepareStatement(
+                             "UPDATE policy_holder SET dependent_list = ? WHERE c_id = ?")) {
+                    Array dependentArray = conn.createArrayOf("varchar", dependentList.toArray());
+                    pstmt.setArray(1, dependentArray);
+                    pstmt.setString(2, policyHolder.getCID());
+                    pstmt.executeUpdate();
+                    System.out.println("Dependent with CID " + cID + " removed from the dependent list of Policy Holder with CID "
+                            + policyHolder.getCID());
+                    return true;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException("Error removing dependent from dependent list", e);
+                }
+            } else {
+                System.out.println("Dependent with CID " + cID + " is not in the dependent list of Policy Holder with CID " + policyHolder.getCID());
             }
         } else {
-            System.out.println("Dependent with CID " + dependentCID + " is not in the dependent list of Policy Holder "
-                    + "with CID " + policyHolderCID);
-            return false;
+            System.out.println("Policy Holder associated with dependent CID " + cID + " not found.");
         }
+        return false;
     }
     public void updatePolicyHolderActionHistory(String policyHolderId, String action) {
         String sql = "UPDATE policy_holder SET action_history = array_append(action_history, ?) WHERE c_id = ?";
@@ -405,26 +514,8 @@ public class CustomerCRUD {
             throw new RuntimeException(e);
         }
     }
-    private boolean checkPolicyHolderExists(String policyHolderCID) {
-        String sql = "SELECT EXISTS (" +
-                "    SELECT 1 FROM policy_holder WHERE c_id = ?" +
-                ")";
-
-        try (Connection conn = databaseConnection.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, policyHolderCID);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getBoolean(1); // Returns true if the cID exists in the policy_holder table, false otherwise
-            }
-        } catch (SQLException e) {
-            e.printStackTrace(); // Handle or log the exception as needed
-        }
-
-        return false; // Return false by default if an exception occurs
-    }
-    private boolean isPolicyHolder(String cID) {
-        String sql = "SELECT EXISTS (SELECT 1 FROM policy_holder WHERE c_id = ?)";
+    public boolean checkEntityExists(String tableName, String cID) {
+        String sql = "SELECT EXISTS (SELECT 1 FROM " + tableName + " WHERE c_id = ?)";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, cID);
@@ -435,17 +526,18 @@ public class CustomerCRUD {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Error checking if CID belongs to a policy holder", e);
+            throw new RuntimeException("Error checking if CID exists in table: " + tableName, e);
         }
         return false;
     }
+
 
     // CRUD for dependents
     public boolean createDependent(Dependent dependent) {
 
         // Check if the policyholder exists
         String policyHolderCID = dependent.getPolicyHolder();
-        if (!checkPolicyHolderExists(policyHolderCID)) {
+        if (!checkEntityExists("policy_holder", policyHolderCID)) {
             System.out.println("Policy Holder with cID " + policyHolderCID + " does not exist.");
             return false;
         }
@@ -491,19 +583,115 @@ public class CustomerCRUD {
             return false;
         }
     }
-    public boolean deleteDependent(String dependentCID) {
+    public boolean deleteDependent(String cID) {
+        // Check if the dependent exists in the dependent table
+        if (!dependentExists(cID)) {
+            System.out.println("Dependent with CID " + cID + " does not exist.");
+            return false;
+        }
+
+        // Proceed to remove the dependent from associated lists
+        boolean removedFromDependentList = removeFromDependentList(cID);
+        boolean removedFromBeneficiaries = removeFromBeneficiaries(cID);
+        boolean removedInsuranceCard = deleteInsuranceCard(cID);
+
+        // Proceed to delete the dependent from the dependent table
+        boolean dependentDeleted = deleteDependentFromTable(cID);
+
+        // Return true only if all removal operations and deletion from the table were successful
+        return dependentDeleted && removedFromDependentList && removedFromBeneficiaries && removedInsuranceCard;
+    }
+
+    private boolean dependentExists(String cID) {
+        // Check if the dependent exists in the dependent table
+        String sql = "SELECT COUNT(*) FROM dependent WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    private boolean deleteDependentFromTable(String cID) {
         String sql = "DELETE FROM dependent WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, dependentCID);
-            int rowsDeleted = pstmt.executeUpdate();
-            return rowsDeleted > 0;
+            pstmt.setString(1, cID);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Error deleting dependent", e);
+            throw new RuntimeException("Error deleting dependent from table", e);
+        }
+    }
+    public void updateDependent(String cID, String phone, String address, String email, String password) throws SQLException {
+        String sql = "UPDATE dependent SET phone = ?, address = ?, email = ?, password = ? WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, phone);
+            pstmt.setString(2, address);
+            pstmt.setString(3, email);
+            pstmt.setString(4, password);
+            pstmt.setString(5, cID);
+            pstmt.executeUpdate();
+        }
+    }
+    public Dependent readDependent(String cID) {
+        String sql = "SELECT * FROM dependent WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String role = rs.getString("role");
+                    String fullName = rs.getString("full_name");
+                    String phone = rs.getString("phone");
+                    String address = rs.getString("address");
+                    String email = rs.getString("email");
+                    String password = rs.getString("password");
+
+                    String[] actionHistoryArray = (String[]) rs.getArray("action_history").getArray();
+                    List<String> actionHistory = Arrays.asList(actionHistoryArray);
+
+                    String[] claimListArray = (String[]) rs.getArray("claim_list").getArray();
+                    List<Claim> claimList = new ArrayList<>();
+                    for (String fID : claimListArray) {
+                        claimList.add(readClaim(fID));
+                    }
+
+                    String policyOwner = rs.getString("policy_owner");
+                    String policyHolder = rs.getString("policy_holder");
+                    String insuranceCardNumber = rs.getString("insurance_card_number");
+
+                    return new Dependent(cID, role, fullName, phone, address, email, password, actionHistory, claimList, policyOwner, policyHolder, insuranceCardNumber);
+                } else {
+                    System.out.println("No Dependent found with cID: " + cID);
+                    return null;
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
     public void deleteDependentsOfPolicyHolder(String policyHolderCID) throws SQLException {
+        String sql = "DELETE FROM dependent WHERE policy_holder = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, policyHolderCID);
+            pstmt.executeUpdate();
+        }
+    }
+    public void deleteDependentsByPolicyHolder(String policyHolderCID) throws SQLException {
+        // SQL query to delete dependents associated with the given policyholder
         String sql = "DELETE FROM dependent WHERE policy_holder = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -521,24 +709,6 @@ public class CustomerCRUD {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-    private boolean checkDependentExists(String dependentId) {
-        String sql = "SELECT EXISTS (" +
-                "    SELECT 1 FROM dependent WHERE c_id = ?" +
-                ")";
-
-        try (Connection conn = databaseConnection.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, dependentId);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getBoolean(1); // Returns true if the cID exists in the policy_holder table, false otherwise
-            }
-        } catch (SQLException e) {
-            e.printStackTrace(); // Handle or log the exception as needed
-        }
-
-        return false; // Return false by default if an exception occurs
     }
     public void addToClaimList(String cID, String fID) {
         try (Connection conn = databaseConnection.connect()) {
@@ -611,9 +781,9 @@ public class CustomerCRUD {
     }
     public boolean removeFromClaimList(String cID, String fID) {
         String tableName;
-        if (checkPolicyHolderExists(cID)) {
+        if (checkEntityExists("policy_holder", cID)) {
             tableName = "policy_holder";
-        } else if (checkDependentExists(cID)) {
+        } else if (checkEntityExists("dependent", cID)) {
             tableName = "dependent";
         } else {
             System.out.println("Customer with cID " + cID + " does not exist.");
@@ -639,22 +809,7 @@ public class CustomerCRUD {
             throw new RuntimeException("Error removing claim from claim list", e);
         }
     }
-    private boolean isDependent(String cID) {
-        String sql = "SELECT EXISTS (SELECT 1 FROM dependent WHERE c_id = ?)";
-        try (Connection conn = databaseConnection.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, cID);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getBoolean(1);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error checking if CID belongs to a dependent", e);
-        }
-        return false;
-    }
+
     public Claim readClaim(String fID) throws SQLException {
         String sql = "SELECT * FROM claim WHERE f_id = ?";
         try (Connection conn = databaseConnection.connect();
@@ -733,5 +888,16 @@ public class CustomerCRUD {
         }
         return documentList;
     }
-
+    private boolean deleteInsuranceCard(String cID) {
+        String sql = "DELETE FROM insurance_card WHERE card_holder = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
