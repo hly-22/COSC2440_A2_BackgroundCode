@@ -900,4 +900,34 @@ public class CustomerCRUD {
             return false;
         }
     }
+    private String getHashedPasswordFromDB(String cID) {
+        String hashedPassword = null;
+        String sql = "SELECT password FROM customer WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    hashedPassword = rs.getString("password");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving password from the database", e);
+        }
+        return hashedPassword;
+    }
+
+    private void updatePasswordInDB(String cID, String hashedPassword) {
+        String sql = "UPDATE customer SET password = ? WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, hashedPassword);
+            pstmt.setString(2, cID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error updating password in the database", e);
+        }
+    }
 }

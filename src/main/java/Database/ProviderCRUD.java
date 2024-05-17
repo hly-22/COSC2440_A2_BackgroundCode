@@ -371,4 +371,34 @@ public class ProviderCRUD {
             throw new RuntimeException(e);
         }
     }
+    private String getHashedPasswordFromDB(String pID) {
+        String hashedPassword = null;
+        String sql = "SELECT password FROM provider WHERE p_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, pID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    hashedPassword = rs.getString("password");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving password from the database", e);
+        }
+        return hashedPassword;
+    }
+
+    private void updatePasswordInDB(String pID, String hashedPassword) {
+        String sql = "UPDATE provider SET password = ? WHERE id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, hashedPassword);
+            pstmt.setString(2, pID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error updating password in the database", e);
+        }
+    }
 }

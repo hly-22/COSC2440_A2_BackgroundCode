@@ -31,8 +31,30 @@ public class SystemAdminOperations {
     private final Scanner scanner = new Scanner(System.in);
 
     // method to update password
-    public void updateAdminPassword(String password) {
+    public void updateAdminPassword() {
 
+        // Ask for current password
+        System.out.print("Enter current password: ");
+        String currentPassword = scanner.nextLine();
+
+        // Retrieve the hashed password from the database based on the username
+        String hashedPasswordFromDB = systemAdminCRUD.getHashedPasswordFromDB("admin");
+
+        // Check if the current password matches the hashed password from the database
+        if (!InputChecker.checkPassword(currentPassword, hashedPasswordFromDB)) {
+            System.out.println("Invalid current password. Password not updated.");
+            return;
+        }
+
+        // Ask for new password
+        System.out.print("Enter new password: ");
+        String newPassword = scanner.nextLine();
+
+        // Hash the new password before storing it in the database
+        String hashedNewPassword = InputChecker.hashPassword(newPassword);
+        systemAdminCRUD.updatePasswordInDB("admin", hashedNewPassword);
+
+        System.out.println("Password updated successfully.");
     }
 
     // method to sum successfully claimed amount with different filtering options
@@ -72,7 +94,7 @@ public class SystemAdminOperations {
         System.out.println("Enter password: ");
         String enteredPassword = scanner.nextLine();
         // convert password into hashed
-        String password = enteredPassword;
+        String password = InputChecker.hashPassword(enteredPassword);
 
         if (role.equalsIgnoreCase("policyowner")) {
             return new PolicyOwner(cID, fullName, phone, address, email, password);
@@ -166,7 +188,6 @@ public class SystemAdminOperations {
             System.out.println("Policy Owner with ID " + cID + " does not exist.");
         }
     }
-
 
     // CRUD for policyholders
     public void addPolicyHolder(PolicyOwner policyOwner) {

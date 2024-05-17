@@ -59,6 +59,35 @@ public class SystemAdminCRUD {
             throw new RuntimeException(e);
         }
     }
+    public String getHashedPasswordFromDB(String ID) {
+        String hashedPassword = null;
+        String sql = "SELECT password FROM system_admin WHERE id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, ID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    hashedPassword = rs.getString("password");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving password from the database", e);
+        }
+        return hashedPassword;
+    }
+    public void updatePasswordInDB(String ID, String hashedPassword) {
+        String sql = "UPDATE system_admin SET password = ? WHERE id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, hashedPassword);
+            pstmt.setString(2, ID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error updating password in the database", e);
+        }
+    }
 
 
 }

@@ -1,5 +1,7 @@
 package OperationManager.Utils;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,4 +40,21 @@ public class InputChecker {
         String regex = "^[0-9]{10}$";
         return cardNumber.matches(regex);
     }
+    // Method to hash the plain text password
+    public static String hashPassword(String password) {
+        if (password == null) {
+            throw new IllegalArgumentException("Password cannot be null.");
+        }
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+
+
+    // Method to check if the user input password matches the hashed password
+    public static boolean checkPassword(String inputPassword, String hashedPassword) {
+        if (inputPassword == null || hashedPassword == null) {
+            return false; // Password or hashed password is null, return false
+        }
+        return BCrypt.checkpw(inputPassword, hashedPassword);
+    }
+
 }

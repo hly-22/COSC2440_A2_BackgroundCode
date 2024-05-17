@@ -8,6 +8,7 @@ import Models.Provider.InsuranceManager;
 import Models.Provider.InsuranceSurveyor;
 import OperationManager.SystemAdmin.SystemAdminOperations;
 import OperationManager.Utils.InputChecker;
+import UserManagement.Login;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.Scanner;
 
 public class SystemAdminView {
     static SystemAdminOperations operations = new SystemAdminOperations();
+    private Login login;
     static Scanner scanner = new Scanner(System.in);
 
     public static void addAPolicyOwner() {
@@ -177,11 +179,11 @@ public class SystemAdminView {
         }
 
         System.out.println("Enter new password:");
-        String password = scanner.nextLine();
+        String enteredPassword = scanner.nextLine();
+        String password = InputChecker.hashPassword(enteredPassword);
 
         operations.updatePolicyOwner(cID, phone, address, email, password);
         System.out.println("Policy Owner updated successfully!");
-
     }
     public void updateInsuranceManager() {
 
@@ -192,7 +194,8 @@ public class SystemAdminView {
             return;
         }
         System.out.println("Enter new password:");
-        String newPassword = scanner.nextLine();
+        String enteredPassword = scanner.nextLine();
+        String newPassword = InputChecker.hashPassword(enteredPassword);
 
         try {
             operations.updateInsuranceManager(pID, newPassword);
@@ -214,7 +217,8 @@ public class SystemAdminView {
             return;
         }
         System.out.println("Enter new password:");
-        String newPassword = scanner.nextLine();
+        String enteredPassword = scanner.nextLine();
+        String newPassword = InputChecker.hashPassword(enteredPassword);
 
         try {
             operations.updateInsuranceSurveyor(pID, newPassword);
@@ -269,7 +273,8 @@ public class SystemAdminView {
         }
 
         System.out.println("Enter new password:");
-        String password = scanner.nextLine();
+        String enteredPassword = scanner.nextLine();
+        String password = InputChecker.hashPassword(enteredPassword);
 
         operations.updatePolicyHolder(cID, phone, address, email, password);
         System.out.println("Policy Holder updated successfully!");
@@ -370,6 +375,9 @@ public class SystemAdminView {
             System.out.println("No claims found for customer with CID " + cID);
         }
     }
+    public void updatePassword() {
+        operations.updateAdminPassword();
+    }
     public void displayAdminMenu () {
 
         while (true) {
@@ -398,7 +406,8 @@ public class SystemAdminView {
             System.out.println("21. Retrieve Claim by fID");
             System.out.println("22. Retrieve All Claims");
             System.out.println("23. Retrieve All Claims of cID");
-            System.out.println("0. Exit");
+            System.out.println("24. Update Password");
+            System.out.println("0. Logout");
 
             try {
                 int response = Integer.parseInt(scanner.nextLine());
@@ -426,6 +435,7 @@ public class SystemAdminView {
                     case 21 -> retrieveClaimByfID();
                     case 22 -> getAllClaims();
                     case 23 -> getClaimsByCustomerID();
+                    case 24 -> updatePassword();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

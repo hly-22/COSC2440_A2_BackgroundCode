@@ -62,6 +62,9 @@ public class PolicyOwnerView {
             System.out.println("=== Policy Owner ===");
             System.out.println("1. Add a Beneficiary");
             System.out.println("2. Add Claim for Beneficiary");
+            System.out.println("3. Retrieve Claim by fID");
+            System.out.println("4. Retrieve All Claims");
+            System.out.println("5. Retrieve All Claims of Beneficiary");
             System.out.println("0. Exit");
 
             try {
