@@ -55,6 +55,43 @@ public class ClaimCRUD {
         }
         return null; // Return null if no claim found with the given fID
     }
+    public List<Claim> readAllClaims() {
+        List<Claim> claims = new ArrayList<>();
+        String sql = "SELECT f_id FROM claim";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                String fID = rs.getString("f_id");
+                Claim claim = readClaim(fID);
+                if (claim != null) {
+                    claims.add(claim);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error getting all claims", e);
+        }
+        return claims;
+    }
+    public List<Claim> getClaimsByCustomerID(String cID) {
+        List<Claim> claims = new ArrayList<>();
+        String sql = "SELECT * FROM claim WHERE insured_person = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Claim claim = extractClaimFromResultSet(rs);
+                    claims.add(claim);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error fetching claims by customer ID", e);
+        }
+        return claims;
+    }
     private Claim extractClaimFromResultSet(ResultSet rs) throws SQLException {
         String fID = rs.getString("f_id");
         LocalDate claimDate = rs.getDate("claim_date").toLocalDate();

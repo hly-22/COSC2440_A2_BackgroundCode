@@ -1,5 +1,6 @@
 package ViewManager.SystemAdmin;
 
+import Models.Claim.Claim;
 import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
 import Models.Customer.PolicyOwner;
@@ -10,6 +11,7 @@ import OperationManager.Utils.InputChecker;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class SystemAdminView {
@@ -324,6 +326,50 @@ public class SystemAdminView {
 
         operations.deleteDependent(cID);
     }
+    public void retrieveClaimByfID() {
+        System.out.println("Enter the FID of the claim:");
+        String fID = scanner.nextLine();
+        if (!InputChecker.isValidFIDFormat(fID)) {
+            System.out.println("Invalid FID format. FID should be in the format 'f-#######'.");
+            return;
+        }
+        Claim claim = operations.getClaimByID(fID);
+        if (claim != null) {
+            System.out.println("Claim found:");
+            System.out.println(claim.toString());
+        } else {
+            System.out.println("Claim with ID " + fID + " not found.");
+        }
+    }
+    public void getAllClaims() {
+        List<Claim> claims = operations.getAllClaims();
+        if (!claims.isEmpty()) {
+            System.out.println("All Claims:");
+            for (Claim claim : claims) {
+                System.out.println(claim.toString());
+            }
+        } else {
+            System.out.println("No claims found.");
+        }
+    }
+    public void getClaimsByCustomerID() {
+        System.out.println("Enter the CID of the customer:");
+        String cID = scanner.nextLine();
+        if (!InputChecker.isValidCIDFormat(cID)) {
+            System.out.println("Invalid customer ID format.");
+            return;
+        }
+
+        List<Claim> claims = operations.getClaimsByCustomerID(cID);
+        if (!claims.isEmpty()) {
+            System.out.println("Claims for customer with CID " + cID + ":");
+            for (Claim claim : claims) {
+                System.out.println(claim.toString());
+            }
+        } else {
+            System.out.println("No claims found for customer with CID " + cID);
+        }
+    }
     public void displayAdminMenu () {
 
         while (true) {
@@ -349,6 +395,9 @@ public class SystemAdminView {
             System.out.println("18. Update a Dependent");
             System.out.println("19. Delete a Policy Holder");
             System.out.println("20. Delete a Dependent");
+            System.out.println("21. Retrieve Claim by fID");
+            System.out.println("22. Retrieve All Claims");
+            System.out.println("23. Retrieve All Claims of cID");
             System.out.println("0. Exit");
 
             try {
@@ -374,6 +423,9 @@ public class SystemAdminView {
                     case 18 -> updateDependent();
                     case 19 -> deleteAPolicyHolder();
                     case 20 -> deleteADependent();
+                    case 21 -> retrieveClaimByfID();
+                    case 22 -> getAllClaims();
+                    case 23 -> getClaimsByCustomerID();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

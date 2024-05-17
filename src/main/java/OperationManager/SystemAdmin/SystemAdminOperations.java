@@ -1,6 +1,7 @@
 package OperationManager.SystemAdmin;
 
 import Database.*;
+import Models.Claim.Claim;
 import Models.Customer.Customer;
 import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Scanner;
 
 public class SystemAdminOperations {
@@ -24,6 +26,7 @@ public class SystemAdminOperations {
     private ProviderCRUD providerCRUD = new ProviderCRUD(databaseConnection);
     private CustomerCRUD customerCRUD = new CustomerCRUD(databaseConnection);
     private InsuranceCardCRUD insuranceCardCRUD = new InsuranceCardCRUD(databaseConnection);
+    private ClaimCRUD claimCRUD = new ClaimCRUD(databaseConnection);
     private SystemAdminCRUD systemAdminCRUD = new SystemAdminCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
 
@@ -439,5 +442,21 @@ public class SystemAdminOperations {
         } catch (SQLException e) {
             throw new RuntimeException("Error deleting Insurance Surveyor from database", e);
         }
+    }
+
+    // R for claims
+    public Claim getClaimByID(String fID) {
+        try {
+            return claimCRUD.readClaim(fID);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error getting claim by ID", e);
+        }
+    }
+    public List<Claim> getAllClaims() {
+        return claimCRUD.readAllClaims();
+    }
+    public List<Claim> getClaimsByCustomerID(String cID) {
+        return claimCRUD.getClaimsByCustomerID(cID);
     }
 }
