@@ -25,7 +25,7 @@ public class InsuranceManagerOperations implements ProviderClaimDAO, ProviderCus
         this.insuranceManager = insuranceManager;
     }
 
-    // method to update password
+    // method to update password and display information
     public void updateProviderPassword() {
         // Ask for current password
         System.out.print("Enter current password: ");
@@ -50,35 +50,11 @@ public class InsuranceManagerOperations implements ProviderClaimDAO, ProviderCus
 
         System.out.println("Password updated successfully.");
     }
+    public void displayInfo() {
+        System.out.println(providerCRUD.readInsuranceManager(insuranceManager.getPID()));
+    }
 
     // methods relating to surveyors
-    public void addSurveyor() {
-
-        System.out.println("Enter a valid pID (p-xxxxxxx): ");
-        String pID = scanner.nextLine();
-        if (!InputChecker.isValidPIDFormat(pID)) {
-            System.out.println("Invalid provider ID format.");
-            return;
-        }
-        // check if pID already exists
-
-        System.out.println("Enter full name: ");
-        String fullName = scanner.nextLine();
-
-        System.out.println("Enter password: ");
-        String enteredPassword = scanner.nextLine();
-        // convert password into hashed
-        String password = enteredPassword;
-
-        InsuranceSurveyor insuranceSurveyor = new InsuranceSurveyor(pID, fullName, password, insuranceManager.getPID());
-        System.out.println(insuranceSurveyor);
-
-        insuranceManager.addActionHistory(LocalDate.now() + ": add Insurance Surveyor " + insuranceSurveyor.getPID() + " to surveyor list");
-        System.out.println(insuranceManager.getActionHistory());
-    }
-    public boolean removeSurveyor(InsuranceSurveyor insuranceSurveyor) {
-        return false;
-    }
     public void getSurveyorInfo(InsuranceSurveyor insuranceSurveyor) {
 
     }
