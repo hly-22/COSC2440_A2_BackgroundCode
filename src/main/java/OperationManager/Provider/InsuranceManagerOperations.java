@@ -1,16 +1,16 @@
 package OperationManager.Provider;
 
+import Database.ClaimCRUD;
 import Database.DatabaseConnection;
 import Database.ProviderCRUD;
 import Interfaces.ProviderClaimDAO;
 import Interfaces.ProviderCustomerDAO;
 import Models.Claim.Claim;
-import Models.Customer.Dependent;
+import Models.Claim.ClaimStatus;
 import Models.Provider.InsuranceManager;
 import Models.Provider.InsuranceSurveyor;
 import OperationManager.Utils.InputChecker;
 
-import javax.xml.crypto.Data;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
@@ -20,6 +20,7 @@ public class InsuranceManagerOperations implements ProviderClaimDAO, ProviderCus
     private InsuranceManager insuranceManager;
     private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
     private ProviderCRUD providerCRUD = new ProviderCRUD(databaseConnection);
+    private ClaimCRUD claimCRUD = new ClaimCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
     public InsuranceManagerOperations(InsuranceManager insuranceManager) {
         this.insuranceManager = insuranceManager;
@@ -47,67 +48,109 @@ public class InsuranceManagerOperations implements ProviderClaimDAO, ProviderCus
         // Hash the new password before storing it in the database
         String hashedNewPassword = InputChecker.hashPassword(newPassword);
         providerCRUD.updatePasswordInDB(insuranceManager.getPID(), hashedNewPassword);
+        providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": update password");
 
         System.out.println("Password updated successfully.");
     }
     public void displayInfo() {
         System.out.println(providerCRUD.readInsuranceManager(insuranceManager.getPID()));
+        providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": get information");
     }
 
     // methods relating to surveyors
-    public void getSurveyorInfo(InsuranceSurveyor insuranceSurveyor) {
-
+    public InsuranceSurveyor retrieveSurveyorInfo(String pID) {
+        InsuranceSurveyor surveyor = providerCRUD.readInsuranceSurveyor(pID);
+        if (surveyor != null && surveyor.getInsuranceManager().equals(insuranceManager.getPID())) {
+            providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": retrieve Insurance Surveyor " + surveyor.getPID());
+            return surveyor;
+        } else {
+            return null; // Surveyor not found or doesn't belong to the logged-in InsuranceManager
+        }
+    }
+    public List<InsuranceSurveyor> retrieveAllSurveyors() {
+        providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": get all Surveyors");
+        return providerCRUD.getAllSurveyorsByManager(insuranceManager.getPID());
     }
 
     // methods relating to claims
     @Override
-    public void getAllClaims() {
-
+    public List<Claim> getAllClaims() {
+        providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": get all Claims");
+        return claimCRUD.readAllClaims();
     }
 
     @Override
-    public void getClaimByID(String fID) {
-
+    public Claim getClaimByID(String fID) {
+        providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": get Claim " + fID);
+        return claimCRUD.readClaim(fID);
     }
 
     @Override
-    public void filterClaim() {
-
+    public List<Claim> getClaimsByInsuranceCard(String insuranceCardNumber) {
+        providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": get Claims of Insurance Card " + insuranceCardNumber);
+        return claimCRUD.getClaimsByInsuranceCard(insuranceCardNumber);
     }
 
     @Override
-    public void requireMoreInfo() {
+    public List<Claim> getClaimsByStatus(String status) {
+        providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": get Claims of Status " + status);
+        return claimCRUD.getClaimsByStatus(status);
+    }
+
+    @Override
+    public List<Claim> getClaimsByCID(String cID) {
+        providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": get Claims of Insured Person " + cID);
+        return claimCRUD.getClaimsByCustomerID(cID);
+    }
+
+    @Override
+    public boolean requireMoreInfo(Claim claim) {
         // not available to insurance managers
+        return false;
     }
 
     @Override
-    public void proposeClaim(Claim claim) {
+    public boolean proposeClaim(Claim claim) {
         // not available to insurance managers
+        return false;
     }
 
     @Override
     public boolean approveClaim(Claim claim) {
+        if (claimCRUD.updateClaimStatus(claim.getFID(), ClaimStatus.APPROVED.name())) {
+            providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": approve Claim " + claim.getFID());
+            return true;
+        }
         return false;
     }
 
     @Override
     public boolean rejectClaim(Claim claim) {
+        if (claimCRUD.updateClaimStatus(claim.getFID(), ClaimStatus.REJECTED.name())) {
+            providerCRUD.updateManagerActionHistory(insuranceManager.getPID(), LocalDate.now() + ": reject Claim " + claim.getFID());
+            return true;
+        }
         return false;
     }
 
     // methods relating to customers
     @Override
-    public void getAllCustomers() {
+    public void getAllPolicyOwners() {
 
     }
 
     @Override
-    public void getCustomerByID(String cID) {
+    public void getAllPolicyHolders() {
 
     }
 
     @Override
-    public void filterCustomer() {
+    public void getAllDependents() {
+
+    }
+
+    @Override
+    public void getCustomerByID(String cID, String table_name) {
 
     }
 }

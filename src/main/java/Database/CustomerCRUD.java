@@ -585,7 +585,7 @@ public class CustomerCRUD {
     }
     public boolean deleteDependent(String cID) {
         // Check if the dependent exists in the dependent table
-        if (!dependentExists(cID)) {
+        if (!checkEntityExists("dependent", cID)) {
             System.out.println("Dependent with CID " + cID + " does not exist.");
             return false;
         }
@@ -602,23 +602,6 @@ public class CustomerCRUD {
         return dependentDeleted && removedFromDependentList && removedFromBeneficiaries && removedInsuranceCard;
     }
 
-    private boolean dependentExists(String cID) {
-        // Check if the dependent exists in the dependent table
-        String sql = "SELECT COUNT(*) FROM dependent WHERE c_id = ?";
-        try (Connection conn = databaseConnection.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, cID);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    int count = rs.getInt(1);
-                    return count > 0;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
     private boolean deleteDependentFromTable(String cID) {
         String sql = "DELETE FROM dependent WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
@@ -917,7 +900,6 @@ public class CustomerCRUD {
         }
         return hashedPassword;
     }
-
     private void updatePasswordInDB(String cID, String hashedPassword) {
         String sql = "UPDATE customer SET password = ? WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();

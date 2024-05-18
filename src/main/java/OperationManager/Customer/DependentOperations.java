@@ -32,17 +32,13 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
 
     @Override
     public Claim getClaimByID(String fID) {
-        try {
-            Claim claim = claimCRUD.readClaim(fID);
-            if (claim != null && claim.getInsuredPerson().equals(dependent.getCID())) {
-                customerCRUD.updateDependentActionHistory(dependent.getCID(), LocalDate.now() + ": retrieve Claim " + claim.getFID());
-                return claim;
-            }
-            System.out.println("No claim found.");
-            return null;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        Claim claim = claimCRUD.readClaim(fID);
+        if (claim != null && claim.getInsuredPerson().equals(dependent.getCID())) {
+            customerCRUD.updateDependentActionHistory(dependent.getCID(), LocalDate.now() + ": retrieve Claim " + claim.getFID());
+            return claim;
         }
+        System.out.println("No claim found.");
+        return null;
     }
 
 

@@ -1,7 +1,8 @@
 package Interfaces;
 
 public interface ProviderCustomerDAO {
-    void getAllCustomers();
-    void getCustomerByID(String cID);
-    void filterCustomer();
+    void getAllPolicyOwners();
+    void getAllPolicyHolders();
+    void getAllDependents();
+    void getCustomerByID(String cID, String table_name);
 }

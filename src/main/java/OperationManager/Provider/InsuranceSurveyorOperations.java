@@ -1,13 +1,17 @@
 package OperationManager.Provider;
 
+import Database.ClaimCRUD;
 import Database.DatabaseConnection;
 import Database.ProviderCRUD;
 import Interfaces.ProviderClaimDAO;
 import Interfaces.ProviderCustomerDAO;
 import Models.Claim.Claim;
+import Models.Claim.ClaimStatus;
 import Models.Provider.InsuranceSurveyor;
 import OperationManager.Utils.InputChecker;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 
 public class InsuranceSurveyorOperations implements ProviderClaimDAO, ProviderCustomerDAO {
@@ -15,11 +19,11 @@ public class InsuranceSurveyorOperations implements ProviderClaimDAO, ProviderCu
     private InsuranceSurveyor insuranceSurveyor;
     private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
     private ProviderCRUD providerCRUD = new ProviderCRUD(databaseConnection);
+    private ClaimCRUD claimCRUD = new ClaimCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
     public InsuranceSurveyorOperations(InsuranceSurveyor insuranceSurveyor) {
         this.insuranceSurveyor = insuranceSurveyor;
     }
-
 
     // method to update password
     public void updateProviderPassword() {
@@ -46,31 +50,60 @@ public class InsuranceSurveyorOperations implements ProviderClaimDAO, ProviderCu
 
         System.out.println("Password updated successfully.");
     }
-
+    public void displayInfo() {
+        System.out.println(providerCRUD.readInsuranceSurveyor(insuranceSurveyor.getPID()));
+        providerCRUD.updateManagerActionHistory(insuranceSurveyor.getPID(), LocalDate.now() + ": get information");
+    }
     // methods relating to claims
     @Override
-    public void getAllClaims() {
-
+    public List<Claim> getAllClaims() {
+        providerCRUD.updateSurveyorActionHistory(insuranceSurveyor.getPID(), LocalDate.now() + ": get all Claims");
+        return claimCRUD.readAllClaims();
     }
 
     @Override
-    public void getClaimByID(String fID) {
-
+    public Claim getClaimByID(String fID) {
+        providerCRUD.updateSurveyorActionHistory(insuranceSurveyor.getPID(), LocalDate.now() + ": get Claim " + fID);
+        return claimCRUD.readClaim(fID);
     }
 
     @Override
-    public void filterClaim() {
-
+    public List<Claim> getClaimsByInsuranceCard(String insuranceCardNumber) {
+        providerCRUD.updateSurveyorActionHistory(insuranceSurveyor.getPID(), LocalDate.now() + ": get Claims of Insurance Card " + insuranceCardNumber);
+        return claimCRUD.getClaimsByInsuranceCard(insuranceCardNumber);
     }
 
     @Override
-    public void requireMoreInfo() {
-
+    public List<Claim> getClaimsByStatus(String status) {
+        providerCRUD.updateSurveyorActionHistory(insuranceSurveyor.getPID(), LocalDate.now() + ": get Claims of Status " + status);
+        return claimCRUD.getClaimsByStatus(status);
     }
 
     @Override
-    public void proposeClaim(Claim claim) {
+    public List<Claim> getClaimsByCID(String cID) {
+        providerCRUD.updateSurveyorActionHistory(insuranceSurveyor.getPID(), LocalDate.now() + ": get Claims of Insured Person " + cID);
+        return claimCRUD.getClaimsByCustomerID(cID);
+    }
 
+    @Override
+    public boolean requireMoreInfo(Claim claim) {
+        System.out.println("Enter your note: ");
+        String note = scanner.nextLine();
+
+        if (claimCRUD.updateClaimStatus(claim.getFID(), ClaimStatus.REJECTED.name()) && claimCRUD.updateNote(claim.getFID(), note)) {
+            providerCRUD.updateSurveyorActionHistory(insuranceSurveyor.getPID(), LocalDate.now() + ": require more information for Claim " + claim.getFID());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean proposeClaim(Claim claim) {
+        if (claimCRUD.updateClaimStatus(claim.getFID(), ClaimStatus.PROCESSING.name())) {
+            providerCRUD.updateSurveyorActionHistory(insuranceSurveyor.getPID(), LocalDate.now() + ": propose Claim " + claim.getFID());
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -84,18 +117,24 @@ public class InsuranceSurveyorOperations implements ProviderClaimDAO, ProviderCu
     }
 
     // methods relating to customers
+
     @Override
-    public void getAllCustomers() {
+    public void getAllPolicyOwners() {
 
     }
 
     @Override
-    public void getCustomerByID(String cID) {
+    public void getAllPolicyHolders() {
 
     }
 
     @Override
-    public void filterCustomer() {
+    public void getAllDependents() {
+
+    }
+
+    @Override
+    public void getCustomerByID(String cID, String table_name) {
 
     }
 }

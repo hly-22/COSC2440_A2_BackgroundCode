@@ -42,7 +42,7 @@ public class ClaimCRUD {
             return false;
         }
     }
-    public Claim readClaim(String fID) throws SQLException {
+    public Claim readClaim(String fID) {
         String sql = "SELECT * FROM claim WHERE f_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -52,6 +52,8 @@ public class ClaimCRUD {
                     return extractClaimFromResultSet(rs);
                 }
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return null; // Return null if no claim found with the given fID
     }
@@ -92,6 +94,40 @@ public class ClaimCRUD {
         }
         return claims;
     }
+    public List<Claim> getClaimsByInsuranceCard(String insuranceCardNumber) {
+        List<Claim> claims = new ArrayList<>();
+        String sql = "SELECT * FROM claim WHERE card_number = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, insuranceCardNumber);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Claim claim = extractClaimFromResultSet(rs);
+                    claims.add(claim);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving claims by insurance card number", e);
+        }
+        return claims;
+    }
+    public List<Claim> getClaimsByStatus(String status) {
+        List<Claim> claims = new ArrayList<>();
+        String sql = "SELECT * FROM claim WHERE status = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, status);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Claim claim = extractClaimFromResultSet(rs);
+                    claims.add(claim);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving claims by status", e);
+        }
+        return claims;
+    }
     private Claim extractClaimFromResultSet(ResultSet rs) throws SQLException {
         String fID = rs.getString("f_id");
         LocalDate claimDate = rs.getDate("claim_date").toLocalDate();
@@ -109,7 +145,7 @@ public class ClaimCRUD {
         // Create and return the Claim object
         return new Claim(fID, claimDate, insuredPerson, cardNumber, examDate, documentList, claimAmount, status, receiverBankingInfo, note);
     }
-    private InsuranceCard fetchInsuranceCard(String cardNumber) throws SQLException {
+    private InsuranceCard fetchInsuranceCard(String cardNumber) {
         String sql = "SELECT * FROM insurance_card WHERE card_number = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -160,14 +196,9 @@ public class ClaimCRUD {
     public boolean deleteClaim(String fID) {
         // First, retrieve the claim to get its details, including the associated cID and documents
         Claim claim;
-        try {
-            claim = readClaim(fID);
-            if (claim == null) {
-                System.out.println("No claim found with fID: " + fID);
-                return false;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        claim = readClaim(fID);
+        if (claim == null) {
+            System.out.println("No claim found with fID: " + fID);
             return false;
         }
 
@@ -241,5 +272,30 @@ public class ClaimCRUD {
         }
     }
 
-    // udpate claim
+    public boolean updateClaimStatus(String fID, String newStatus) {
+        String sql = "UPDATE claim SET status = ? WHERE f_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newStatus);
+            pstmt.setString(2, fID);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error updating claim status", e);
+        }
+    }
+    public boolean updateNote(String fID, String note) {
+        String sql = "UPDATE claim SET note = ? WHERE f_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, note);
+            pstmt.setString(2, fID);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error updating claim note", e);
+        }
+    }
 }

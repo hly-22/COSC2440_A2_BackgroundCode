@@ -266,6 +266,27 @@ public class ProviderCRUD {
             removeSurveyorFromList(pID);
         }
     }
+    public List<InsuranceSurveyor> getAllSurveyorsByManager(String managerPID) {
+        List<InsuranceSurveyor> surveyors = new ArrayList<>();
+        String sql = "SELECT * FROM insurance_surveyor WHERE insurance_manager = ?";
+
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, managerPID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String pID = rs.getString("p_id");
+                    // Use existing method to read InsuranceSurveyor
+                    InsuranceSurveyor surveyor = readInsuranceSurveyor(pID);
+                    surveyors.add(surveyor);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving surveyors by manager PID", e);
+        }
+        return surveyors;
+    }
     private boolean checkInsuranceManagerExists(String insuranceManagerPID) {
         String sql = "SELECT EXISTS (" +
                 "    SELECT 1 FROM insurance_manager WHERE p_id = ?" +
