@@ -259,8 +259,8 @@ public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public void getAllClaims() {
-
+    public List<Claim> getAllClaims() {
+        return null;
     }
 
     @Override

@@ -5,7 +5,6 @@ import Database.DatabaseConnection;
 import Interfaces.CustomerClaimDAO;
 import Interfaces.UserInfoDAO;
 import Models.Claim.Claim;
-import Models.Customer.Customer;
 import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
 import Models.InsuranceCard.InsuranceCard;
@@ -14,6 +13,7 @@ import OperationManager.Utils.InputChecker;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Scanner;
 
 public class PolicyHolderOperations implements UserInfoDAO, CustomerClaimDAO {
@@ -123,8 +123,9 @@ public class PolicyHolderOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public void getAllClaims() {
+    public List<Claim> getAllClaims() {
 
+        return null;
     }
 
     @Override
