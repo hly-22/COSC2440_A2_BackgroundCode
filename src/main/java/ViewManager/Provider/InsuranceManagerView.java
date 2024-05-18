@@ -12,7 +12,9 @@ public class InsuranceManagerView {
     public InsuranceManagerView(InsuranceManager insuranceManager) {
         this.operations = new InsuranceManagerOperations(insuranceManager);
     }
-
+    public void updatePassword() {
+        operations.updateProviderPassword();
+    }
     public void addASurveyor() {
         operations.addSurveyor();
     }
@@ -22,13 +24,16 @@ public class InsuranceManagerView {
         while (true) {
             System.out.println();
             System.out.println("=== Insurance Manager ===");
-            System.out.println("1. Add a Surveyor");
+            System.out.println("1. Update Password");
+            System.out.println("2. Add a Surveyor");
+
             System.out.println("0. Exit");
 
             try {
                 int response = Integer.parseInt(scanner.nextLine());
                 switch (response) {
-                    case 1 -> addASurveyor();
+                    case 1 -> updatePassword();
+                    case 2 -> addASurveyor();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

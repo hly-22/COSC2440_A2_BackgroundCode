@@ -375,7 +375,7 @@ public class ProviderCRUD {
             throw new RuntimeException(e);
         }
     }
-    private String getHashedPasswordFromDB(String pID) {
+    public String getHashedPasswordFromDB(String pID) {
         String hashedPassword = null;
         String sql = "SELECT password FROM provider WHERE p_id = ?";
         try (Connection conn = databaseConnection.connect();
@@ -392,7 +392,7 @@ public class ProviderCRUD {
         }
         return hashedPassword;
     }
-    private void updatePasswordInDB(String pID, String hashedPassword) {
+    public void updatePasswordInDB(String pID, String hashedPassword) {
         String sql = "UPDATE provider SET password = ? WHERE p_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -404,4 +404,5 @@ public class ProviderCRUD {
             throw new RuntimeException("Error updating password in the database", e);
         }
     }
+
 }

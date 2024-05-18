@@ -73,7 +73,9 @@ public class PolicyOwnerView {
             System.out.println("Claim with ID " + fID + " not found.");
         }
     }
-
+    public void updatePassword() {
+        operations.updatePassword();
+    }
     public void displayPolicyOwnerMenu() {
 
         while (true) {
@@ -84,6 +86,7 @@ public class PolicyOwnerView {
             System.out.println("3. Retrieve Claim by fID");
             System.out.println("4. Retrieve All Claims");
             System.out.println("5. Retrieve All Claims of Beneficiary");
+            System.out.println("9. Update Password");
             System.out.println("0. Logout");
 
             try {
@@ -92,6 +95,7 @@ public class PolicyOwnerView {
                     case 1 -> addABeneficiary();
                     case 2 -> addAClaimForBeneficiary();
                     case 3 -> retrieveClaimByFID();
+                    case 9 -> updatePassword();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

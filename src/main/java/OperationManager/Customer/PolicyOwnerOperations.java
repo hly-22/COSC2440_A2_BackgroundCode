@@ -275,27 +275,27 @@ public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
 
     // methods relating to user information
     @Override
-    public void displayInfo(Customer customer) {
+    public void displayInfo() {
 
     }
 
     @Override
-    public boolean updatePhone(Customer customer, String phone) {
+    public boolean updatePhone() {
         return false;
     }
 
     @Override
-    public boolean updateAddress(Customer customer, String address) {
+    public boolean updateAddress() {
         return false;
     }
 
     @Override
-    public boolean updateEmail(Customer customer, String email) {
+    public boolean updateEmail() {
         return false;
     }
 
     @Override
-    public boolean updatePassword(Customer customer, String password) {
+    public boolean updatePassword() {
         return false;
     }
 }

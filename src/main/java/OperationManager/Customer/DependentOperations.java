@@ -1,21 +1,21 @@
 package OperationManager.Customer;
 
 import Database.ClaimCRUD;
+import Database.CustomerCRUD;
 import Database.DatabaseConnection;
 import Interfaces.CustomerClaimDAO;
 import Interfaces.UserInfoDAO;
 import Models.Claim.Claim;
-import Models.Customer.Customer;
 import Models.Customer.Dependent;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Scanner;
 
 public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
 
-    private Dependent dependent = new Dependent();
+    private Dependent dependent;
     private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
+    private CustomerCRUD customerCRUD = new CustomerCRUD(databaseConnection);
     private ClaimCRUD claimCRUD = new ClaimCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
     public DependentOperations(Dependent dependent) {
@@ -29,8 +29,13 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
 
     @Override
     public Claim getClaimByID(String fID) {
+        Claim claim;
         try {
-            return claimCRUD.readClaim(fID);
+            claim = claimCRUD.readClaim(fID);
+            if (claim.getFID().equals(fID)) {
+                return claim;
+            }
+            return null;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -57,27 +62,27 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public void displayInfo(Customer customer) {
-
+    public void displayInfo() {
+        System.out.println(customerCRUD.readDependent(dependent.getCID()));
     }
 
     @Override
-    public boolean updatePhone(Customer customer, String phone) {
+    public boolean updatePhone() {
         return false;   // not available to dependents
     }
 
     @Override
-    public boolean updateAddress(Customer customer, String address) {
+    public boolean updateAddress() {
         return false;   // not available to dependents
     }
 
     @Override
-    public boolean updateEmail(Customer customer, String email) {
+    public boolean updateEmail() {
         return false;   // not available to dependents
     }
 
     @Override
-    public boolean updatePassword(Customer customer, String password) {
+    public boolean updatePassword() {
         return false;   // not available to dependents
     }
 }
