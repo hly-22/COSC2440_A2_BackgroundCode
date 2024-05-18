@@ -944,7 +944,7 @@ public class CustomerCRUD {
             return false;
         }
     }
-    private String getHashedPasswordFromDB(String cID) {
+    public String getHashedPasswordFromDB(String cID) {
         String hashedPassword = null;
         String sql = "SELECT password FROM customer WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
@@ -961,7 +961,7 @@ public class CustomerCRUD {
         }
         return hashedPassword;
     }
-    private void updatePasswordInDB(String cID, String hashedPassword) {
+    public void updatePasswordInDB(String cID, String hashedPassword) {
         String sql = "UPDATE customer SET password = ? WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -1032,5 +1032,18 @@ public class CustomerCRUD {
         }
 
         return null;
+    }
+
+    public boolean updateCustomerContactInfo(String tableName, String customerCID, String newContactInfo, String column) {
+        String sql = String.format("UPDATE %s SET %s = ? WHERE c_id = ?", tableName, column);
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newContactInfo);
+            pstmt.setString(2, customerCID);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating contact info", e);
+        }
     }
 }

@@ -29,7 +29,21 @@ public class ClaimCRUD {
             pstmt.setString(3, claim.getInsuredPerson());
             pstmt.setString(4, claim.getCardNumber().getCardNumber());
             pstmt.setDate(5, Date.valueOf(claim.getExamDate()));
-            pstmt.setArray(6, conn.createArrayOf("varchar", claim.getDocumentList().toArray()));
+
+            // Handle document list
+            List<String> documentIDs = new ArrayList<>();
+            List<Document> documentList = claim.getDocumentList();
+            if (documentList != null) {
+                for (Document document : documentList) {
+                    documentIDs.add(document.getDocumentID());
+                }
+            }
+            if (documentIDs.isEmpty()) {
+                pstmt.setArray(6, conn.createArrayOf("varchar", new String[0]));
+            } else {
+                pstmt.setArray(6, conn.createArrayOf("varchar", documentIDs.toArray(new String[0])));
+            }
+
             pstmt.setBigDecimal(7, claim.getClaimAmount());
             pstmt.setString(8, claim.getStatus());
             pstmt.setString(9, claim.getReceiverBankingInfo());
@@ -37,6 +51,34 @@ public class ClaimCRUD {
 
             pstmt.executeUpdate();
             return true;
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle or log the exception as needed
+            return false;
+        }
+    }
+    public boolean updateClaim(Claim claim) {
+        String sql = "UPDATE claim SET document_list = ?, receiver_banking_info = ? WHERE f_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            // Handle document list
+            List<String> documentIDs = new ArrayList<>();
+            List<Document> documentList = claim.getDocumentList();
+            if (documentList != null) {
+                for (Document document : documentList) {
+                    documentIDs.add(document.getDocumentID());
+                }
+            }
+            if (documentIDs.isEmpty()) {
+                pstmt.setArray(1, conn.createArrayOf("varchar", new String[0]));
+            } else {
+                pstmt.setArray(1, conn.createArrayOf("varchar", documentIDs.toArray(new String[0])));
+            }
+
+            pstmt.setString(2, claim.getReceiverBankingInfo());
+            pstmt.setString(3, claim.getFID());
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace(); // Handle or log the exception as needed
             return false;
@@ -298,4 +340,60 @@ public class ClaimCRUD {
             throw new RuntimeException("Error updating claim note", e);
         }
     }
+
+    public boolean createDocument(Document document) {
+        String sql = "INSERT INTO document (document_id, f_id, file_name, convert_file_name, url) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, document.getDocumentID());
+            pstmt.setString(2, document.getfID());
+            pstmt.setString(3, document.getFileName());
+            pstmt.setString(4, document.getConvertFileName());
+            pstmt.setString(5, document.getURL());
+
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle or log the exception as needed
+            return false;
+        }
+    }
+    public boolean checkDependent(String policyholderCID, String dependentCID) {
+        String sql = "SELECT dependent_list FROM policy_holder WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, policyholderCID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String[] dependentListArray = (String[]) rs.getArray("dependent_list").getArray();
+                    List<String> dependentList = Arrays.asList(dependentListArray);
+                    return dependentList.contains(dependentCID);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
+    public boolean checkClaimOwner(String dependentCID, String claimFID) {
+        String sql = "SELECT COUNT(*) AS count FROM claim WHERE insured_person = ? AND f_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, dependentCID);
+            pstmt.setString(2, claimFID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt("count");
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }

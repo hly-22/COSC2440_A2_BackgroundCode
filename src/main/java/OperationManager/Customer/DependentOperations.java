@@ -6,9 +6,9 @@ import Database.DatabaseConnection;
 import Interfaces.CustomerClaimDAO;
 import Interfaces.UserInfoDAO;
 import Models.Claim.Claim;
+import Models.Claim.Document;
 import Models.Customer.Dependent;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,12 +41,6 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
         return null;
     }
 
-
-    @Override
-    public boolean getAllClaimsByCustomer(String cID) {
-        return false;   // not available to dependents
-    }
-
     @Override
     public List<Claim> getAllClaims() {
         List<Claim> allClaims = new ArrayList<>();
@@ -56,10 +50,9 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public boolean updateClaim(String fID, Claim claim) {
-        return false;   // not available to dependents
+    public boolean updateClaim(String fID, List<Document> documentList, String receiverBankingInfo) {
+        return false;    // not available to dependents
     }
-
     @Override
     public boolean deleteClaim(String fID) {
         return false;   // not available to dependents
@@ -73,22 +66,23 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public boolean updatePhone() {
+    public boolean updatePhone(String phone) {
         return false;   // not available to dependents
     }
 
     @Override
-    public boolean updateAddress() {
+    public boolean updateAddress(String address) {
         return false;   // not available to dependents
     }
 
     @Override
-    public boolean updateEmail() {
+    public boolean updateEmail(String email) {
         return false;   // not available to dependents
     }
 
     @Override
     public boolean updatePassword() {
-        return false;   // not available to dependents
+        return false;
+        // not available to dependents
     }
 }

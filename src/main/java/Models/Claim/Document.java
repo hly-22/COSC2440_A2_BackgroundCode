@@ -14,6 +14,13 @@ public class Document {
         this.convertFileName = setConvertFileName(documentID, fID, fileName);
         this.URL = URL;
     }
+    public Document(String documentID, String fID, String fileName) {
+        this.documentID = documentID;
+        this.fID = fID;
+        this.fileName = fileName;
+        this.convertFileName = setConvertFileName(documentID, fID, fileName);
+        this.URL = null;
+    }
     public Document(String documentID, String fID, String fileName, String convertFileName, String URL) {
         this.documentID = documentID;
         this.fID = fID;

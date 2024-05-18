@@ -8,6 +8,7 @@ import Interfaces.CustomerClaimDAO;
 import Interfaces.UserInfoDAO;
 import Models.Claim.Claim;
 import Models.Claim.ClaimStatus;
+import Models.Claim.Document;
 import Models.Customer.Customer;
 import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
@@ -16,9 +17,9 @@ import Models.InsuranceCard.InsuranceCard;
 import OperationManager.Utils.InputChecker;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -233,13 +234,33 @@ public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
             return false;
         }
 
-        // add document
+        System.out.println("Add document list: ");
+        boolean addDocument = true;
+        while (addDocument) {
+            System.out.println("Enter document id (d-xxxxxxx): ");
+            String documentID = scanner.nextLine().trim();
+
+            if (documentID.equalsIgnoreCase("x")) {
+                addDocument = false;
+            }
+
+            System.out.println("Enter document name: ");
+            String fileName = scanner.nextLine().trim();
+
+            claim.addDocument(new Document(documentID, fID, fileName));
+            if (claimCRUD.createDocument(new Document(documentID, fID, fileName))) {
+                System.out.println("Document added. Press 'x' to stop adding.");
+            } else {
+                System.out.println("Error adding document.");
+            }
+        }
 
         boolean createClaimSuccessfully = claimCRUD.createClaim(claim);
 
         if (createClaimSuccessfully) {
             customerCRUD.addToClaimList(insuranceCard.getCardHolder(), claim.getFID());
             customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": add Claim " + fID + " to Insurance Card " + insuranceCardNumber + " holder");
+            return true;
         }
         return false;
     }
@@ -256,14 +277,16 @@ public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
 
     @Override
     public List<Claim> getAllClaims() {
-        return null;
+        List<Claim> allClaims = new ArrayList<>();
+        allClaims = claimCRUD.getClaimsByCustomerID(policyOwner.getCID());
+        customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": retrieve all claims");
+        return allClaims;
     }
 
     @Override
-    public boolean updateClaim(String fID, Claim claim) {
+    public boolean updateClaim(String fID, List<Document> documentList, String receiverBankingInfo) {
         return false;
     }
-
     @Override
     public boolean deleteClaim(String fID) {
         return false;
@@ -276,22 +299,44 @@ public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public boolean updatePhone() {
-        return false;
+    public boolean updatePhone(String newPhone) {
+        return customerCRUD.updateCustomerContactInfo("policy_owner", policyOwner.getCID(), newPhone, "phone");
     }
 
     @Override
-    public boolean updateAddress() {
-        return false;
+    public boolean updateAddress(String newAddress) {
+        return customerCRUD.updateCustomerContactInfo("policy_owner", policyOwner.getCID(), newAddress, "address");
     }
 
     @Override
-    public boolean updateEmail() {
-        return false;
+    public boolean updateEmail(String newEmail) {
+        return customerCRUD.updateCustomerContactInfo("policy_owner", policyOwner.getCID(), newEmail, "email");
     }
-
     @Override
     public boolean updatePassword() {
+        // Ask for current password
+        System.out.print("Enter current password: ");
+        String currentPassword = scanner.nextLine();
+
+        // Retrieve the hashed password from the database based on the username
+        String hashedPasswordFromDB = customerCRUD.getHashedPasswordFromDB(policyOwner.getCID());
+
+        // Check if the current password matches the hashed password from the database
+        if (!InputChecker.checkPassword(currentPassword, hashedPasswordFromDB)) {
+            System.out.println("Invalid current password. Password not updated.");
+            return false;
+        }
+
+        // Ask for new password
+        System.out.print("Enter new password: ");
+        String newPassword = scanner.nextLine();
+
+        // Hash the new password before storing it in the database
+        String hashedNewPassword = InputChecker.hashPassword(newPassword);
+        customerCRUD.updatePasswordInDB(policyOwner.getCID(), hashedNewPassword);
+
+        System.out.println("Password updated successfully.");
+        customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": update password");
         return false;
     }
 }

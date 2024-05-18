@@ -118,10 +118,10 @@ public class Claim {
     }
 
     public boolean addDocument(Document document) {
-        return false;
+        return getDocumentList().add(document);
     }
     public boolean removeDocument(Document document) {
-        return false;
+        return getDocumentList().remove(document);
     }
     public boolean getDocument(Document document) {
         return false;
