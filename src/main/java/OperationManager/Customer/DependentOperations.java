@@ -9,6 +9,8 @@ import Models.Claim.Claim;
 import Models.Customer.Dependent;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
@@ -29,17 +31,18 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
 
     @Override
     public Claim getClaimByID(String fID) {
-        Claim claim;
         try {
-            claim = claimCRUD.readClaim(fID);
-            if (claim.getFID().equals(fID)) {
+            Claim claim = claimCRUD.readClaim(fID);
+            if (claim != null && claim.getInsuredPerson().equals(dependent.getCID())) {
                 return claim;
             }
+            System.out.println("No claim found.");
             return null;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     @Override
     public boolean getAllClaimsByCustomer(String cID) {
@@ -47,8 +50,10 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public void getAllClaims() {
-
+    public List<Claim> getAllClaims() {
+        List<Claim> allClaims = new ArrayList<>();
+        allClaims = claimCRUD.getClaimsByCustomerID(dependent.getCID());
+        return allClaims;
     }
 
     @Override
@@ -63,8 +68,10 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
 
     @Override
     public void displayInfo() {
-        System.out.println(customerCRUD.readDependent(dependent.getCID()));
+        Dependent dependentInfo = customerCRUD.readDependent(dependent.getCID());
+        System.out.println(dependentInfo);
     }
+
 
     @Override
     public boolean updatePhone() {

@@ -1,25 +1,35 @@
 package ViewManager.Customer;
 
+import Models.Claim.Claim;
 import Models.Customer.Dependent;
-import Models.Customer.PolicyHolder;
 import OperationManager.Customer.DependentOperations;
-import OperationManager.Customer.PolicyHolderOperations;
 
 import java.util.Scanner;
 
 public class DependentView {
-    private DependentOperations operations;
+    private final DependentOperations operations;
     static Scanner scanner = new Scanner(System.in);
     public DependentView(Dependent dependent) {
         this.operations = new DependentOperations(dependent);
     }
     public void retrieveClaimByFID() {
-
         System.out.println("Enter fID: ");
         String fID = scanner.nextLine().trim();
 
-        System.out.println(operations.getClaimByID(fID));
+        Claim claim = operations.getClaimByID(fID);
+        if (claim != null) {
+            System.out.println(claim);
+        } else {
+            System.out.println("No claim found for FID: " + fID);
+        }
     }
+    public void retrieveAllClaims() {
+        operations.getAllClaims();
+    }
+    public void retrieveInfo() {
+        operations.displayInfo();
+    }
+
     public void displayDependentMenu() {
         while (true) {
             System.out.println();
@@ -33,6 +43,8 @@ public class DependentView {
                 int response = Integer.parseInt(scanner.nextLine());
                 switch (response) {
                     case 1 -> retrieveClaimByFID();
+                    case 2 -> retrieveAllClaims();
+                    case 3 -> retrieveInfo();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;
