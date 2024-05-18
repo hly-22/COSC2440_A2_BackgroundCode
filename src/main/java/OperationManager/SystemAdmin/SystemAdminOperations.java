@@ -462,12 +462,7 @@ public class SystemAdminOperations {
 
     // R for claims
     public Claim getClaimByID(String fID) {
-        try {
-            return claimCRUD.readClaim(fID);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error getting claim by ID", e);
-        }
+        return claimCRUD.readClaim(fID);
     }
     public List<Claim> getAllClaims() {
         return claimCRUD.readAllClaims();

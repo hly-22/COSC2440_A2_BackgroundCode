@@ -2,6 +2,10 @@ package ViewManager.Provider;
 
 import Models.Claim.Claim;
 import Models.Claim.ClaimStatus;
+import Models.Customer.Customer;
+import Models.Customer.Dependent;
+import Models.Customer.PolicyHolder;
+import Models.Customer.PolicyOwner;
 import Models.Provider.InsuranceManager;
 import Models.Provider.InsuranceSurveyor;
 import OperationManager.Provider.InsuranceManagerOperations;
@@ -146,6 +150,37 @@ public class InsuranceManagerView {
             }
         }
     }
+    private void displayAllPolicyOwners() {
+        List<PolicyOwner> policyOwners = operations.getAllPolicyOwners();
+        for (PolicyOwner policyOwner : policyOwners) {
+            System.out.println(policyOwner);
+        }
+    }
+
+    private void displayAllPolicyHolders() {
+        List<PolicyHolder> policyHolders = operations.getAllPolicyHolders();
+        for (PolicyHolder policyHolder : policyHolders) {
+            System.out.println(policyHolder);
+        }
+    }
+
+    private void displayAllDependents() {
+        List<Dependent> dependents = operations.getAllDependents();
+        for (Dependent dependent : dependents) {
+            System.out.println(dependent);
+        }
+    }
+
+    private void displayCustomerByID(String tableName) {
+        System.out.println("Enter cID: ");
+        String cID = scanner.nextLine();
+        Customer customer = operations.getCustomerByID(cID, tableName);
+        if (customer != null) {
+            System.out.println(customer);
+        } else {
+            System.out.println("Customer not found.");
+        }
+    }
     public void displaySurveyorMenu() {
         while (true) {
             System.out.println();
@@ -222,6 +257,12 @@ public class InsuranceManagerView {
             try {
                 int response = Integer.parseInt(scanner.nextLine());
                 switch (response) {
+                    case 1 -> displayAllPolicyOwners();
+                    case 2 -> displayAllPolicyHolders();
+                    case 3 -> displayAllDependents();
+                    case 4 -> displayCustomerByID("policy_owner");
+                    case 5 -> displayCustomerByID("policy_holder");
+                    case 6 -> displayCustomerByID("dependent");
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

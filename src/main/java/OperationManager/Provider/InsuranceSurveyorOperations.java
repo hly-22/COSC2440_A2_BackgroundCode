@@ -1,12 +1,17 @@
 package OperationManager.Provider;
 
 import Database.ClaimCRUD;
+import Database.CustomerCRUD;
 import Database.DatabaseConnection;
 import Database.ProviderCRUD;
 import Interfaces.ProviderClaimDAO;
 import Interfaces.ProviderCustomerDAO;
 import Models.Claim.Claim;
 import Models.Claim.ClaimStatus;
+import Models.Customer.Customer;
+import Models.Customer.Dependent;
+import Models.Customer.PolicyHolder;
+import Models.Customer.PolicyOwner;
 import Models.Provider.InsuranceSurveyor;
 import OperationManager.Utils.InputChecker;
 
@@ -19,6 +24,7 @@ public class InsuranceSurveyorOperations implements ProviderClaimDAO, ProviderCu
     private InsuranceSurveyor insuranceSurveyor;
     private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
     private ProviderCRUD providerCRUD = new ProviderCRUD(databaseConnection);
+    private CustomerCRUD customerCRUD = new CustomerCRUD(databaseConnection);
     private ClaimCRUD claimCRUD = new ClaimCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
     public InsuranceSurveyorOperations(InsuranceSurveyor insuranceSurveyor) {
@@ -119,22 +125,22 @@ public class InsuranceSurveyorOperations implements ProviderClaimDAO, ProviderCu
     // methods relating to customers
 
     @Override
-    public void getAllPolicyOwners() {
-
+    public List<PolicyOwner> getAllPolicyOwners() {
+        return customerCRUD.getAllPolicyOwners();
     }
 
     @Override
-    public void getAllPolicyHolders() {
-
+    public List<PolicyHolder> getAllPolicyHolders() {
+        return customerCRUD.getAllPolicyHolders();
     }
 
     @Override
-    public void getAllDependents() {
-
+    public List<Dependent> getAllDependents() {
+        return customerCRUD.getAllDependents();
     }
 
     @Override
-    public void getCustomerByID(String cID, String table_name) {
-
+    public Customer getCustomerByID(String cID, String table_name) {
+        return customerCRUD.getCustomerByID(cID, table_name);
     }
 }

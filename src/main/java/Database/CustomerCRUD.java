@@ -3,6 +3,7 @@ package Database;
 import Models.Claim.Claim;
 import Models.Claim.ClaimStatus;
 import Models.Claim.Document;
+import Models.Customer.Customer;
 import Models.Customer.Dependent;
 import Models.Customer.PolicyHolder;
 import Models.Customer.PolicyOwner;
@@ -78,6 +79,26 @@ public class CustomerCRUD {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+    public List<PolicyOwner> getAllPolicyOwners() {
+        List<PolicyOwner> policyOwners = new ArrayList<>();
+        String sql = "SELECT c_id FROM policy_owner";
+        try (Connection conn = databaseConnection.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String cID = rs.getString("c_id");
+                PolicyOwner policyOwner = readPolicyOwner(cID);
+                if (policyOwner != null) {
+                    policyOwners.add(policyOwner);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving all policy owners", e);
+        }
+        return policyOwners;
     }
     public void updatePolicyOwner(String cID, String phone, String address, String email, String password) throws SQLException {
         String sql = "UPDATE policy_owner SET phone = ?, address = ?, email = ?, password = ? WHERE c_id = ?";
@@ -356,6 +377,26 @@ public class CustomerCRUD {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+    public List<PolicyHolder> getAllPolicyHolders() {
+        List<PolicyHolder> policyHolders = new ArrayList<>();
+        String sql = "SELECT c_id FROM policy_holder";
+        try (Connection conn = databaseConnection.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String cID = rs.getString("c_id");
+                PolicyHolder policyHolder = getPolicyHolder(cID);
+                if (policyHolder != null) {
+                    policyHolders.add(policyHolder);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving all policy holders", e);
+        }
+        return policyHolders;
     }
     public void updatePolicyHolder(String cID, String phone, String address, String email, String password) throws SQLException {
         String sql = "UPDATE policy_holder SET phone = ?, address = ?, email = ?, password = ? WHERE c_id = ?";
@@ -665,6 +706,26 @@ public class CustomerCRUD {
             throw new RuntimeException(e);
         }
     }
+    public List<Dependent> getAllDependents() {
+        List<Dependent> dependents = new ArrayList<>();
+        String sql = "SELECT c_id FROM dependent";
+        try (Connection conn = databaseConnection.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String cID = rs.getString("c_id");
+                Dependent dependent = readDependent(cID);
+                if (dependent != null) {
+                    dependents.add(dependent);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving all dependents", e);
+        }
+        return dependents;
+    }
     public void deleteDependentsOfPolicyHolder(String policyHolderCID) throws SQLException {
         String sql = "DELETE FROM dependent WHERE policy_holder = ?";
         try (Connection conn = databaseConnection.connect();
@@ -911,5 +972,65 @@ public class CustomerCRUD {
             e.printStackTrace();
             throw new RuntimeException("Error updating password in the database", e);
         }
+    }
+    public Customer getCustomerByID(String cID, String tableName) {
+        String sql = "SELECT * FROM " + tableName + " WHERE c_id = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractCustomerFromResultSet(rs, tableName);
+                } else {
+                    System.out.println("No customer found with cID: " + cID);
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving customer by cID", e);
+        }
+    }
+    private Customer extractCustomerFromResultSet(ResultSet rs, String tableName) throws SQLException {
+        String cID = rs.getString("c_id");
+        String role = rs.getString("role");
+        String fullName = rs.getString("full_name");
+        String phone = rs.getString("phone");
+        String address = rs.getString("address");
+        String email = rs.getString("email");
+        String password = rs.getString("password");
+        String[] actionHistoryArray = (String[]) rs.getArray("action_history").getArray();
+        List<String> actionHistory = Arrays.asList(actionHistoryArray);
+
+        if (tableName.equals("policy_owner")) {
+            String[] beneficiariesArray = (String[]) rs.getArray("beneficiaries").getArray();
+            List<String> beneficiaries = Arrays.asList(beneficiariesArray);
+            BigDecimal insuranceFee = rs.getBigDecimal("insurance_fee");
+            return new PolicyOwner(cID, role, fullName, phone, address, email, password, actionHistory, null, beneficiaries, insuranceFee);
+
+        } else if (tableName.equals("policy_holder")) {
+            String[] claimListArray = (String[]) rs.getArray("claim_list").getArray();
+            List<Claim> claimList = new ArrayList<>();
+            for (String fID : claimListArray) {
+                claimList.add(readClaim(fID));
+            }
+            String policyOwner = rs.getString("policy_owner");
+            String insuranceCardNumber = rs.getString("insurance_card_number");
+            String[] dependentListArray = (String[]) rs.getArray("dependent_list").getArray();
+            List<String> dependentList = Arrays.asList(dependentListArray);
+            return new PolicyHolder(cID, role, fullName, phone, address, email, password, actionHistory, claimList, policyOwner, insuranceCardNumber, dependentList);
+
+        } else if (tableName.equals("dependent")) {
+            String[] claimListArray = (String[]) rs.getArray("claim_list").getArray();
+            List<Claim> claimList = new ArrayList<>();
+            for (String fID : claimListArray) {
+                claimList.add(readClaim(fID));
+            }
+            String policyOwner = rs.getString("policy_owner");
+            String policyHolder = rs.getString("policy_holder");
+            String insuranceCardNumber = rs.getString("insurance_card_number");
+            return new Dependent(cID, role, fullName, phone, address, email, password, actionHistory, claimList, policyOwner, policyHolder, insuranceCardNumber);
+        }
+
+        return null;
     }
 }
