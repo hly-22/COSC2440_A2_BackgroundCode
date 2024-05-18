@@ -1,18 +1,26 @@
 package OperationManager.Customer;
 
+import Database.ClaimCRUD;
+import Database.DatabaseConnection;
 import Interfaces.CustomerClaimDAO;
 import Interfaces.UserInfoDAO;
 import Models.Claim.Claim;
 import Models.Customer.Customer;
 import Models.Customer.Dependent;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
 public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
 
-    private final Dependent dependent = new Dependent();
+    private Dependent dependent = new Dependent();
+    private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
+    private ClaimCRUD claimCRUD = new ClaimCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
+    public DependentOperations(Dependent dependent) {
+        this.dependent = dependent;
+    }
 
     @Override
     public boolean addClaim(String insuranceCardNumber) {
@@ -20,8 +28,12 @@ public class DependentOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public boolean getClaimByID(String fID) {
-        return false;
+    public Claim getClaimByID(String fID) {
+        try {
+            return claimCRUD.readClaim(fID);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

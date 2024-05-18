@@ -11,10 +11,13 @@ import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class PolicyHolderView {
-    static PolicyHolderOperations operations = new PolicyHolderOperations();
+    private PolicyHolderOperations operations;
     static Scanner scanner = new Scanner(System.in);
+    public PolicyHolderView(PolicyHolder policyHolder) {
+        this.operations = new PolicyHolderOperations(policyHolder);
+    }
 
-    public static void addADependent() {
+    public void addADependent() {
         operations.addDependent();
     }
     public void displayPolicyHolderMenu () {

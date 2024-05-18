@@ -14,8 +14,11 @@ import java.util.Scanner;
 
 public class InsuranceManagerOperations implements ProviderClaimDAO, ProviderCustomerDAO {
 
-    private final InsuranceManager insuranceManager = new InsuranceManager();
+    private InsuranceManager insuranceManager;
     private final Scanner scanner = new Scanner(System.in);
+    public InsuranceManagerOperations(InsuranceManager insuranceManager) {
+        this.insuranceManager = insuranceManager;
+    }
 
     // method to update password
     public void updateProviderPassword(String password) {

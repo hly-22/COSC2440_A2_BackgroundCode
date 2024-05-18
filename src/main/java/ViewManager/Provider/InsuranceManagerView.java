@@ -1,14 +1,19 @@
 package ViewManager.Provider;
 
+import Models.Provider.InsuranceManager;
 import OperationManager.Provider.InsuranceManagerOperations;
 
 import java.util.Scanner;
 
 public class InsuranceManagerView {
-    static InsuranceManagerOperations operations = new InsuranceManagerOperations();
+    private InsuranceManagerOperations operations;
     static Scanner scanner = new Scanner(System.in);
 
-    public static void addASurveyor() {
+    public InsuranceManagerView(InsuranceManager insuranceManager) {
+        this.operations = new InsuranceManagerOperations(insuranceManager);
+    }
+
+    public void addASurveyor() {
         operations.addSurveyor();
     }
 

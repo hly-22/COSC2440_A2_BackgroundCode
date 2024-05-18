@@ -1,16 +1,18 @@
 package Database;
 
+import Models.SystemAdmin.SystemAdmin;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class SystemAdminCRUD {
-
     private final DatabaseConnection databaseConnection;
-
+    private static final String SELECT_ADMIN_BY_ID = "SELECT * FROM system_admin WHERE id = ?";
     public SystemAdminCRUD(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
     }
@@ -87,6 +89,36 @@ public class SystemAdminCRUD {
             e.printStackTrace();
             throw new RuntimeException("Error updating password in the database", e);
         }
+    }
+
+
+    public SystemAdmin readAdmin(String adminID) {
+        SystemAdmin admin = null;
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(SELECT_ADMIN_BY_ID)) {
+            pstmt.setString(1, adminID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                String id = rs.getString("id");
+                String password = rs.getString("password");
+                List<String> actionHistory = getActionHistory(rs.getString("action_history"));
+                admin = new SystemAdmin(id, password, actionHistory);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return admin;
+    }
+
+    private List<String> getActionHistory(String actionHistoryStr) {
+        List<String> actionHistory = new ArrayList<>();
+        if (actionHistoryStr != null && !actionHistoryStr.isEmpty()) {
+            String[] actions = actionHistoryStr.split(",");
+            for (String action : actions) {
+                actionHistory.add(action);
+            }
+        }
+        return actionHistory;
     }
 
 

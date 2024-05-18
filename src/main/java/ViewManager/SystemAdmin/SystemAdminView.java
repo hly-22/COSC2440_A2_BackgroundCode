@@ -6,21 +6,22 @@ import Models.Customer.PolicyHolder;
 import Models.Customer.PolicyOwner;
 import Models.Provider.InsuranceManager;
 import Models.Provider.InsuranceSurveyor;
+import Models.SystemAdmin.SystemAdmin;
 import OperationManager.SystemAdmin.SystemAdminOperations;
 import OperationManager.Utils.InputChecker;
-import UserManagement.Login;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class SystemAdminView {
-    static SystemAdminOperations operations = new SystemAdminOperations();
-    private Login login;
+    private SystemAdminOperations operations;
     static Scanner scanner = new Scanner(System.in);
+    public SystemAdminView(SystemAdmin systemAdmin) {
+        this.operations = new SystemAdminOperations(systemAdmin);
+    }
 
-    public static void addAPolicyOwner() {
+    public void addAPolicyOwner() {
         operations.addPolicyOwner();
     }
     public void retrieveAPolicyOwner() {
@@ -45,7 +46,7 @@ public class SystemAdminView {
             System.out.println("Deletion canceled.");
         }
     }
-    public static void addAPolicyHolder() {
+    public void addAPolicyHolder() {
 
         System.out.println();
         System.out.println("Enter a Policy Owner cID: ");
@@ -56,7 +57,7 @@ public class SystemAdminView {
 
         operations.addPolicyHolder(policyOwner);
     }
-    public static void addADependent() {
+    public void addADependent() {
 
         System.out.println();
         System.out.println("Enter a Policy Owner cID: ");
@@ -74,10 +75,10 @@ public class SystemAdminView {
 
         operations.addDependent(policyOwner, policyHolder);
     }
-    public static void addAnInsuranceManager() {
+    public void addAnInsuranceManager() {
         operations.addInsuranceManager();
     }
-    public static void retrieveAnInsuranceManager() {
+    public void retrieveAnInsuranceManager() {
 
         System.out.println("Enter a Insurance Manager pID that you want to retrieve: ");
         String insuranceManagerPID = scanner.nextLine();
@@ -90,7 +91,7 @@ public class SystemAdminView {
             e.printStackTrace();
         }
     }
-    public static void deleteAnInsuranceManager() {
+    public void deleteAnInsuranceManager() {
         System.out.println("Enter the pID of the Insurance Manager to delete:");
         String pID = scanner.nextLine();
 
@@ -119,7 +120,7 @@ public class SystemAdminView {
             System.out.println("Error: " + e.getMessage());
         }
     }
-    public static void addAnInsuranceSurveyor() {
+    public void addAnInsuranceSurveyor() {
 
         System.out.println("Enter a Insurance Manager pID: ");
         String insuranceManagerPID = scanner.nextLine();
@@ -129,7 +130,7 @@ public class SystemAdminView {
 
         operations.addInsuranceSurveyor(insuranceManager);
     }
-    public static void retrieveAnInsuranceSurveyor() {
+    public void retrieveAnInsuranceSurveyor() {
 
         System.out.println("Enter a Insurance Surveyor pID that you want to retrieve: ");
         String insuranceSurveyorPID = scanner.nextLine();
@@ -142,7 +143,7 @@ public class SystemAdminView {
             e.printStackTrace();
         }
     }
-    public static void deleteAnInsuranceSurveyor() {
+    public void deleteAnInsuranceSurveyor() {
 
         System.out.println("Enter the pID of the Insurance Surveyor to delete:");
         String pID = scanner.nextLine();
@@ -341,7 +342,7 @@ public class SystemAdminView {
         Claim claim = operations.getClaimByID(fID);
         if (claim != null) {
             System.out.println("Claim found:");
-            System.out.println(claim.toString());
+            System.out.println(claim);
         } else {
             System.out.println("Claim with ID " + fID + " not found.");
         }

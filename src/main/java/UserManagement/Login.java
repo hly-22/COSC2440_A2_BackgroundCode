@@ -1,10 +1,6 @@
 package UserManagement;
 
 import Database.DatabaseConnection;
-import ViewManager.Customer.PolicyHolderView;
-import ViewManager.Customer.PolicyOwnerView;
-import ViewManager.Provider.InsuranceManagerView;
-import ViewManager.SystemAdmin.SystemAdminView;
 
 import java.sql.SQLException;
 import java.util.Scanner;
@@ -65,12 +61,5 @@ public class Login {
 
     public SessionManager getSessionManager() {
         return sessionManager;
-    }
-
-    public String getUserID() {
-        return sessionManager.getCurrentUserID(); // Assuming you have a method to get current user ID in SessionManager
-    }
-    public String getUserRole() {
-        return sessionManager.getCurrentUserRole(); // Assuming you have a method to get user role by ID in SessionManager
     }
 }

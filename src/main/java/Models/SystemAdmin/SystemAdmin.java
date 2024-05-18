@@ -12,6 +12,12 @@ public class SystemAdmin {
         this.actionHistory = new ArrayList<>();
     }
 
+    public SystemAdmin(String id, String password, List<String> actionHistory) {
+        this.id = id;
+        this.password = password;
+        this.actionHistory = actionHistory;
+    }
+
     public String getId() {
         return id;
     }

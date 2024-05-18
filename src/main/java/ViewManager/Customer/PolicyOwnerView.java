@@ -1,6 +1,7 @@
 package ViewManager.Customer;
 
 import Database.CustomerCRUD;
+import Models.Claim.Claim;
 import Models.Customer.PolicyHolder;
 import Models.Customer.PolicyOwner;
 import OperationManager.Customer.PolicyOwnerOperations;
@@ -10,10 +11,13 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PolicyOwnerView {
-    static PolicyOwnerOperations operations = new PolicyOwnerOperations(new PolicyOwner("c-0000000", "Cathy", "0907838929", "Vietnamese", "policy_owner1@gmail.com", "testing"));
-    static Scanner scanner = new Scanner(System.in);
+    private PolicyOwnerOperations operations;
+    private final Scanner scanner = new Scanner(System.in);
+    public PolicyOwnerView(PolicyOwner policyOwner) {
+        this.operations = new PolicyOwnerOperations(policyOwner);
+    }
 
-    public static void addABeneficiary() {
+    public void addABeneficiary() {
 
         while (true) {
             System.out.println();
@@ -54,8 +58,23 @@ public class PolicyOwnerView {
         }
         operations.addClaim(insuranceCardNumber);
     }
+    public void retrieveClaimByFID() {
+        System.out.println("Enter the FID of the claim:");
+        String fID = scanner.nextLine();
+        if (!InputChecker.isValidFIDFormat(fID)) {
+            System.out.println("Invalid FID format. FID should be in the format 'f-#######'.");
+            return;
+        }
+        Claim claim = operations.getClaimByID(fID);
+        if (claim != null) {
+            System.out.println("Claim found:");
+            System.out.println(claim);
+        } else {
+            System.out.println("Claim with ID " + fID + " not found.");
+        }
+    }
 
-    public void displayPolicyOwnerMenu () {
+    public void displayPolicyOwnerMenu() {
 
         while (true) {
             System.out.println();
@@ -65,13 +84,14 @@ public class PolicyOwnerView {
             System.out.println("3. Retrieve Claim by fID");
             System.out.println("4. Retrieve All Claims");
             System.out.println("5. Retrieve All Claims of Beneficiary");
-            System.out.println("0. Exit");
+            System.out.println("0. Logout");
 
             try {
                 int response = Integer.parseInt(scanner.nextLine());
                 switch (response) {
                     case 1 -> addABeneficiary();
                     case 2 -> addAClaimForBeneficiary();
+                    case 3 -> retrieveClaimByFID();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

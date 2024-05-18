@@ -1,5 +1,7 @@
 package OperationManager.Customer;
 
+import Database.ClaimCRUD;
+import Database.DatabaseConnection;
 import Interfaces.CustomerClaimDAO;
 import Interfaces.UserInfoDAO;
 import Models.Claim.Claim;
@@ -9,15 +11,20 @@ import Models.Customer.PolicyHolder;
 import Models.InsuranceCard.InsuranceCard;
 import OperationManager.Utils.InputChecker;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class PolicyHolderOperations implements UserInfoDAO, CustomerClaimDAO {
 
-    private final PolicyHolder policyHolder = new PolicyHolder();
+    private PolicyHolder policyHolder = new PolicyHolder();
+    private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
+    private ClaimCRUD claimCRUD = new ClaimCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
-
+    public PolicyHolderOperations(PolicyHolder policyHolder) {
+        this.policyHolder = policyHolder;
+    }
 
     // methods relating to dependents
     public void addDependent() {
@@ -102,8 +109,12 @@ public class PolicyHolderOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public boolean getClaimByID(String fID) {
-        return false;
+    public Claim getClaimByID(String fID) {
+        try {
+            return claimCRUD.readClaim(fID);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

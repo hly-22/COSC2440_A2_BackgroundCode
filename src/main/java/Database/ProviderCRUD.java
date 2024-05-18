@@ -74,7 +74,7 @@ public class ProviderCRUD {
             return false;
         }
     }
-    public InsuranceManager readInsuranceManager(String pID) throws SQLException {
+    public InsuranceManager readInsuranceManager(String pID) {
         String sql = "SELECT * FROM insurance_manager WHERE p_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -92,6 +92,8 @@ public class ProviderCRUD {
                     return null;
                 }
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
     public void updateInsuranceManager(String pID, String newPassword) throws SQLException {
@@ -214,7 +216,7 @@ public class ProviderCRUD {
             return false;
         }
     }
-    public InsuranceSurveyor readInsuranceSurveyor(String pID) throws SQLException {
+    public InsuranceSurveyor readInsuranceSurveyor(String pID) {
         String sql = "SELECT * FROM insurance_surveyor WHERE p_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -232,6 +234,8 @@ public class ProviderCRUD {
                     return null;
                 }
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
     public void updateInsuranceSurveyor(String pID, String newPassword) throws SQLException {
@@ -388,9 +392,8 @@ public class ProviderCRUD {
         }
         return hashedPassword;
     }
-
     private void updatePasswordInDB(String pID, String hashedPassword) {
-        String sql = "UPDATE provider SET password = ? WHERE id = ?";
+        String sql = "UPDATE provider SET password = ? WHERE p_id = ?";
         try (Connection conn = databaseConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, hashedPassword);

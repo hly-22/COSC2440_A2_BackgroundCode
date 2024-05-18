@@ -11,8 +11,11 @@ import java.util.Scanner;
 
 public class InsuranceSurveyorOperations implements ProviderClaimDAO, ProviderCustomerDAO {
 
-    private final InsuranceSurveyor insuranceSurveyor = new InsuranceSurveyor();
+    private InsuranceSurveyor insuranceSurveyor;
     private final Scanner scanner = new Scanner(System.in);
+    public InsuranceSurveyorOperations(InsuranceSurveyor insuranceSurveyor) {
+        this.insuranceSurveyor = insuranceSurveyor;
+    }
 
 
     // method to update password

@@ -1,13 +1,7 @@
 import Database.DatabaseConnection;
-import UserManagement.Login;
 import UserManagement.LoginManager;
-import UserManagement.SessionManager;
-import UserManagement.UserAuthentication;
-import ViewManager.Customer.PolicyHolderView;
-import ViewManager.SystemAdmin.SystemAdminView;
 
 import java.sql.SQLException;
-import java.util.function.Supplier;
 
 public class Main {
 //    public static void main(String[] args) throws SQLException {

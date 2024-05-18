@@ -245,8 +245,12 @@ public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
     }
 
     @Override
-    public boolean getClaimByID(String fID) {
-        return false;
+    public Claim getClaimByID(String fID) {
+        try {
+            return claimCRUD.readClaim(fID);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

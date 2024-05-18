@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class SystemAdminOperations {
-    private final SystemAdmin systemAdmin = new SystemAdmin();
+    private SystemAdmin systemAdmin;
     private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
     private ProviderCRUD providerCRUD = new ProviderCRUD(databaseConnection);
     private CustomerCRUD customerCRUD = new CustomerCRUD(databaseConnection);
@@ -29,6 +29,9 @@ public class SystemAdminOperations {
     private ClaimCRUD claimCRUD = new ClaimCRUD(databaseConnection);
     private SystemAdminCRUD systemAdminCRUD = new SystemAdminCRUD(databaseConnection);
     private final Scanner scanner = new Scanner(System.in);
+    public SystemAdminOperations(SystemAdmin systemAdmin) {
+        this.systemAdmin = systemAdmin;
+    }
 
     // method to update password
     public void updateAdminPassword() {
@@ -364,7 +367,7 @@ public class SystemAdminOperations {
         System.out.println("Enter password: ");
         String enteredPassword = scanner.nextLine();
         // convert password into hashed
-        String password = enteredPassword;
+        String password = InputChecker.hashPassword(enteredPassword);
 
         if (role.equalsIgnoreCase("insurancemanager")) {
             return new InsuranceManager(pID, "InsuranceManager", fullName, password);
@@ -387,15 +390,11 @@ public class SystemAdminOperations {
         }
     }
     public InsuranceManager getInsuranceManager(String pID) {
-        try {
-            InsuranceManager insuranceManager = providerCRUD.readInsuranceManager(pID);
-            if (insuranceManager != null) {
-                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Insurance Manager " + pID);
-            }
-            return insuranceManager;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error reading Insurance Manager from database", e);
+        InsuranceManager insuranceManager = providerCRUD.readInsuranceManager(pID);
+        if (insuranceManager != null) {
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Insurance Manager " + pID);
         }
+        return insuranceManager;
     }
     public void updateInsuranceManager(String pID, String newPassword) throws SQLException {
         try {
@@ -435,15 +434,11 @@ public class SystemAdminOperations {
 
     }
     public InsuranceSurveyor getInsuranceSurveyor(String pID) {
-        try {
-            InsuranceSurveyor insuranceSurveyor = providerCRUD.readInsuranceSurveyor(pID);
-            if (insuranceSurveyor != null) {
-                systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Insurance Surveyor " + pID);
-            }
-            return insuranceSurveyor;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error reading Insurance Surveyor from database", e);
+        InsuranceSurveyor insuranceSurveyor = providerCRUD.readInsuranceSurveyor(pID);
+        if (insuranceSurveyor != null) {
+            systemAdminCRUD.updateAdminActionHistory("admin", LocalDate.now() + ": retrieve Insurance Surveyor " + pID);
         }
+        return insuranceSurveyor;
     }
     public void updateInsuranceSurveyor(String pID, String newPassword) throws SQLException {
         try {
