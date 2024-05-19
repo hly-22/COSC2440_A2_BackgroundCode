@@ -4,6 +4,9 @@
 
 package Models.Customer;
 
+import Models.Claim.Claim;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Customer {
@@ -15,9 +18,12 @@ public abstract class Customer {
     private String email;
     private String password;
     private List<String> actionHistory;
+    private List<Claim> claimList;
 
-    public Customer() {}
-    public Customer(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory) {
+    public Customer() {
+        this.actionHistory = new ArrayList<>();
+    }
+    public Customer(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory, List<Claim> claimList) {
         this.cID = cID;
         this.role = role;
         this.fullName = fullName;
@@ -26,6 +32,18 @@ public abstract class Customer {
         this.email = email;
         this.password = password;
         this.actionHistory = actionHistory;
+        this.claimList = claimList;
+    }
+    public Customer(String cID, String role, String fullName, String phone, String address, String email, String password) {
+        this.cID = cID;
+        this.role = role;
+        this.fullName = fullName;
+        this.phone = phone;
+        this.address = address;
+        this.email = email;
+        this.password = password;
+        this.actionHistory = new ArrayList<>();
+        this.claimList = new ArrayList<>();
     }
 
     public String getCID() {
@@ -91,6 +109,17 @@ public abstract class Customer {
     public void setActionHistory(List<String> actionHistory) {
         this.actionHistory = actionHistory;
     }
+    public void addActionHistory(String action) {
+        actionHistory.add(action);
+    }
+
+    public List<Claim> getClaimList() {
+        return claimList;
+    }
+
+    public void setClaimList(List<Claim> claimList) {
+        this.claimList = claimList;
+    }
 
     @Override
     public String toString() {
@@ -101,6 +130,7 @@ public abstract class Customer {
                 ", address='" + address + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", actionHistory=" + actionHistory + '\'';
+                ", actionHistory=" + actionHistory +
+                ", claimList=" + claimList;
     }
 }

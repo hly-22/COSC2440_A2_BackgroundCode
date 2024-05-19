@@ -4,6 +4,7 @@ import Models.InsuranceCard.InsuranceCard;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,8 +18,9 @@ public class Claim {
     private BigDecimal claimAmount;
     private ClaimStatus status;
     private String receiverBankingInfo;
+    private String note;
 
-    public Claim(String fID, LocalDate claimDate, String insuredPerson, InsuranceCard cardNumber, LocalDate examDate, List<Document> documentList, BigDecimal claimAmount, ClaimStatus status, String receiverBankingInfo) {
+    public Claim(String fID, LocalDate claimDate, String insuredPerson, InsuranceCard cardNumber, LocalDate examDate, List<Document> documentList, BigDecimal claimAmount, ClaimStatus status, String receiverBankingInfo, String note) {
         this.fID = fID;
         this.claimDate = claimDate;
         this.insuredPerson = insuredPerson;
@@ -28,6 +30,19 @@ public class Claim {
         this.claimAmount = claimAmount;
         this.status = status;
         this.receiverBankingInfo = receiverBankingInfo;
+        this.note = note;
+    }
+    public Claim(String fID, String insuredPerson, InsuranceCard cardNumber, LocalDate examDate, BigDecimal claimAmount, ClaimStatus status) {
+        this.fID = fID;
+        this.claimDate = LocalDate.now();
+        this.insuredPerson = insuredPerson;
+        this.cardNumber = cardNumber;
+        this.examDate = examDate;
+        this.documentList = new ArrayList<>();
+        this.claimAmount = claimAmount;
+        this.status = status;
+        this.receiverBankingInfo = null;
+        this.note = null;
     }
 
     public String getFID() {
@@ -86,8 +101,8 @@ public class Claim {
         this.claimAmount = claimAmount;
     }
 
-    public ClaimStatus getStatus() {
-        return status;
+    public String getStatus() {
+        return String.valueOf(status);
     }
 
     public void setStatus(ClaimStatus status) {
@@ -103,13 +118,25 @@ public class Claim {
     }
 
     public boolean addDocument(Document document) {
-        return false;
+        return getDocumentList().add(document);
     }
     public boolean removeDocument(Document document) {
-        return false;
+        return getDocumentList().remove(document);
     }
     public boolean getDocument(Document document) {
         return false;
+    }
+
+    public void setReceiverBankingInfo(String receiverBankingInfo) {
+        this.receiverBankingInfo = receiverBankingInfo;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 
     @Override
@@ -136,74 +163,8 @@ public class Claim {
                 ", claimAmount=" + claimAmount +
                 ", status=" + status +
                 ", receiverBankingInfo='" + receiverBankingInfo + '\'' +
+                ", note='" + note + '\'' +
                 '}';
     }
 }
 
-enum ClaimStatus {
-    NEW,
-    PROCESSING,
-    APPROVED,
-    REJECTED
-}
-
-class Document {
-    private String fileName;
-    private String convertFileName;
-    private LocalDate uploadDate;
-    private boolean isPDF;
-
-    public Document(String fileName, LocalDate uploadDate, boolean isPDF) {
-        this.fileName = fileName;
-        this.convertFileName = namingConversion(fileName);
-        this.uploadDate = uploadDate;
-        this.isPDF = isPDF;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public String getConvertFileName() {
-        return convertFileName;
-    }
-
-    public void setConvertFileName(String convertFileName) {
-        this.convertFileName = convertFileName;
-    }
-
-    public LocalDate getUploadDate() {
-        return uploadDate;
-    }
-
-    public void setUploadDate(LocalDate uploadDate) {
-        this.uploadDate = uploadDate;
-    }
-
-    public boolean isPDF() {
-        return isPDF;
-    }
-
-    public void setPDF(boolean PDF) {
-        isPDF = PDF;
-    }
-
-    public String namingConversion(String fileName) {
-        // naming format: fID_fileName_uploadDate.pdf
-        return fileName + "_" + ".pdf";
-    }
-
-    @Override
-    public String toString() {
-        return "Document{" +
-                "fileName='" + fileName + '\'' +
-                ", convertFileName='" + convertFileName + '\'' +
-                ", uploadDate=" + uploadDate +
-                ", isPDF=" + isPDF +
-                '}';
-    }
-}

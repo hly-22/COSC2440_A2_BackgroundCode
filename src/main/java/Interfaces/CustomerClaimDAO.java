@@ -1,13 +1,15 @@
 package Interfaces;
 
 import Models.Claim.Claim;
+import Models.Claim.Document;
 import Models.Customer.Customer;
 
+import java.util.List;
+
 public interface CustomerClaimDAO {
-    boolean addClaim(Customer customer, Claim claim);
-    boolean getClaimByID(String fID);
-    boolean getAllClaimsByCustomer(String cID);
-    void getAllClaims();
-    boolean updateClaim(String fID, Claim claim);
+    boolean addClaim(String insuranceCardNumber);
+    Claim getClaimByID(String fID);
+    List<Claim> getAllClaims();
+    boolean updateClaim(String fID, List<Document> documentList, String receiverBankingInfo);
     boolean deleteClaim(String fID);
 }

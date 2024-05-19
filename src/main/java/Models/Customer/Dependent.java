@@ -8,21 +8,42 @@ public class Dependent extends Customer{
     private String policyOwner;
     private String policyHolder;
     private String insuranceCardNumber;
-    private List<Claim> claimList;
 
-    public Dependent(String policyOwner, String policyHolder, String insuranceCardNumber, List<Claim> claimList) {
+    public Dependent(String policyOwner, String policyHolder, String insuranceCardNumber) {
         this.policyOwner = policyOwner;
         this.policyHolder = policyHolder;
         this.insuranceCardNumber = insuranceCardNumber;
-        this.claimList = claimList;
     }
 
-    public Dependent(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory, String policyOwner, String policyHolder, String insuranceCardNumber, List<Claim> claimList) {
-        super(cID, role, fullName, phone, address, email, password, actionHistory);
+    public Dependent(String cID, String role, String fullName, String phone, String address, String email, String password, List<String> actionHistory, List<Claim> claimList, String policyOwner, String policyHolder, String insuranceCardNumber) {
+        super(cID, role, fullName, phone, address, email, password, actionHistory, claimList);
         this.policyOwner = policyOwner;
         this.policyHolder = policyHolder;
         this.insuranceCardNumber = insuranceCardNumber;
-        this.claimList = claimList;
+    }
+
+    public Dependent(String cID, String fullName, String phone, String address, String email, String password) {
+        super(cID, "Dependent", fullName, phone, address, email, password);
+        this.policyOwner = null;
+        this.policyHolder = null;
+        this.insuranceCardNumber = null;
+    }
+    public Dependent(String cID, String fullName, String phone, String address, String email, String password, String policyOwner) {
+        super(cID, "Dependent", fullName, phone, address, email, password);
+        this.policyOwner = policyOwner;
+        this.policyHolder = null;
+        this.insuranceCardNumber = null;
+    }
+
+    public Dependent() {
+
+    }
+
+    public Dependent(String cID, String fullName, String phone, String address, String email, String password, String policyOwner, String policyHolder) {
+        super(cID, "Dependent", fullName, phone, address, email, password);
+        this.policyOwner = policyOwner;
+        this.policyHolder = policyHolder;
+        this.insuranceCardNumber = null;
     }
 
     public String getPolicyOwner() {
@@ -49,22 +70,13 @@ public class Dependent extends Customer{
         this.insuranceCardNumber = insuranceCardNumber;
     }
 
-    public List<Claim> getClaimList() {
-        return claimList;
-    }
-
-    public void setClaimList(List<Claim> claimList) {
-        this.claimList = claimList;
-    }
-
     @Override
     public String toString() {
         return "Dependent{" +
                 super.toString() +
-                "policyOwner='" + policyOwner + '\'' +
+                ", policyOwner='" + policyOwner + '\'' +
                 ", policyHolder='" + policyHolder + '\'' +
                 ", insuranceCardNumber='" + insuranceCardNumber + '\'' +
-                ", claimList=" + claimList +
                 '}';
     }
 }
