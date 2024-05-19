@@ -9,6 +9,7 @@ import Models.Customer.PolicyOwner;
 import OperationManager.Customer.PolicyOwnerOperations;
 import OperationManager.Utils.InputChecker;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -397,6 +398,16 @@ public class PolicyOwnerView {
             }
         }
     }
+    public void calculateSumFee() {
+        // Get the policy owner's CID from the logged-in user or user input
+        String policyOwnerCID = operations.policyOwner.getCID();
+
+        // Call the calculateSumInsuranceFee method in the operations class
+        BigDecimal sumInsuranceFee = operations.calculateInsuranceFee(policyOwnerCID);
+
+        // Display the calculated sum insurance fee
+        System.out.println("Total insurance fee to be paid annually: USD " + sumInsuranceFee);
+    }
     public void displayPolicyOwnerMenu() {
 
         while (true) {
@@ -405,6 +416,7 @@ public class PolicyOwnerView {
             System.out.println("1. CRUD for Beneficiaries");
             System.out.println("2. CRUD for Claims of Beneficiaries");
             System.out.println("3. Personal Information");
+            System.out.println("4. Total Insurance Fee");
             System.out.println("0. Logout");
 
             try {
@@ -413,6 +425,7 @@ public class PolicyOwnerView {
                     case 1 -> displayBeneMenu();
                     case 2 -> displayClaimMenu();
                     case 3 -> displayInfoMenu();
+                    case 4 -> calculateSumFee();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

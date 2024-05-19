@@ -1036,6 +1036,78 @@ public class CustomerCRUD {
             }
         }
     }
+    public Customer getCustomerByID(String cID) {
+        try (Connection conn = databaseConnection.connect()) {
+            // Retrieve common attributes
+            String commonQuery = "SELECT * FROM customer WHERE c_id = ?";
+            try (PreparedStatement commonStmt = conn.prepareStatement(commonQuery)) {
+                commonStmt.setString(1, cID);
+                try (ResultSet rs = commonStmt.executeQuery()) {
+                    if (rs.next()) {
+                        String role = rs.getString("role");
+                        String fullName = rs.getString("full_name");
+                        String phone = rs.getString("phone");
+                        String address = rs.getString("address");
+                        String email = rs.getString("email");
+                        String password = rs.getString("password");
+                        String[] actionHistoryArray = (String[]) rs.getArray("action_history").getArray();
+                        List<String> actionHistory = Arrays.asList(actionHistoryArray);
+
+                        // Check role and retrieve role-specific attributes
+                        switch (role) {
+                            case "PolicyOwner":
+                                // Retrieve PolicyOwner-specific attributes
+                                String beneficiariesQuery = "SELECT beneficiaries, insurance_fee FROM policy_owner WHERE c_id = ?";
+                                try (PreparedStatement poStmt = conn.prepareStatement(beneficiariesQuery)) {
+                                    poStmt.setString(1, cID);
+                                    try (ResultSet poRs = poStmt.executeQuery()) {
+                                        if (poRs.next()) {
+                                            String[] beneficiariesArray = (String[]) poRs.getArray("beneficiaries").getArray();
+                                            List<String> beneficiaries = Arrays.asList(beneficiariesArray);
+                                            BigDecimal insuranceFee = poRs.getBigDecimal("insurance_fee");
+                                            return new PolicyOwner(cID, role, fullName, phone, address, email, password, actionHistory, null, beneficiaries, insuranceFee);
+                                        }
+                                    }
+                                }
+                                break;
+                            case "PolicyHolder":
+                                // Retrieve PolicyHolder-specific attributes
+                                String policyHolderQuery = "SELECT policy_owner, insurance_card_number FROM policy_holder WHERE c_id = ?";
+                                try (PreparedStatement phStmt = conn.prepareStatement(policyHolderQuery)) {
+                                    phStmt.setString(1, cID);
+                                    try (ResultSet phRs = phStmt.executeQuery()) {
+                                        if (phRs.next()) {
+                                            String policyOwner = phRs.getString("policy_owner");
+                                            String insuranceCardNumber = phRs.getString("insurance_card_number");
+                                            return new PolicyHolder(cID, role, fullName, phone, address, email, password, actionHistory, null, policyOwner, insuranceCardNumber, null);
+                                        }
+                                    }
+                                }
+                                break;
+                            case "Dependent":
+                                // Retrieve Dependent-specific attributes
+                                String dependentQuery = "SELECT policy_owner, policy_holder, insurance_card_number FROM dependent WHERE c_id = ?";
+                                try (PreparedStatement dStmt = conn.prepareStatement(dependentQuery)) {
+                                    dStmt.setString(1, cID);
+                                    try (ResultSet dRs = dStmt.executeQuery()) {
+                                        if (dRs.next()) {
+                                            String policyOwner = dRs.getString("policy_owner");
+                                            String policyHolder = dRs.getString("policy_holder");
+                                            String insuranceCardNumber = dRs.getString("insurance_card_number");
+                                            return new Dependent(cID, role, fullName, phone, address, email, password, actionHistory, null, policyOwner, policyHolder, insuranceCardNumber);
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     public Customer getCustomerByID(String cID, String tableName) {
         String sql = "SELECT * FROM " + tableName + " WHERE c_id = ?";
         try (Connection conn = databaseConnection.connect();

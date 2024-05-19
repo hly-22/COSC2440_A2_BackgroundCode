@@ -493,4 +493,28 @@ public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
     public void updateActionHistory(String action) {
         customerCRUD.updatePolicyHolderActionHistory(policyOwner.getCID(), LocalDate.now() + action);
     }
+    public BigDecimal calculateInsuranceFee(String policyOwnerCID) {
+        PolicyOwner policyOwner = (PolicyOwner) customerCRUD.getCustomerByID(policyOwnerCID);
+        if (policyOwner != null) {
+            BigDecimal totalFee = BigDecimal.ZERO;
+
+            // Add fee for policyholders
+            BigDecimal policyHolderFee = policyOwner.getInsuranceFee();
+            totalFee = totalFee.add(policyHolderFee);
+
+            // Add fee for dependents
+            List<String> beneficiaries = policyOwner.getBeneficiaries();
+            for (String beneficiaryCID : beneficiaries) {
+                Customer beneficiary = customerCRUD.getCustomerByID(beneficiaryCID);
+                if (beneficiary instanceof PolicyHolder) {
+                    totalFee = totalFee.add(policyHolderFee);
+                } else if (beneficiary instanceof Dependent) {
+                    totalFee = totalFee.add(policyHolderFee.multiply(BigDecimal.valueOf(0.6)));
+                }
+            }
+
+            return totalFee;
+        }
+        return null;
+    }
 }
