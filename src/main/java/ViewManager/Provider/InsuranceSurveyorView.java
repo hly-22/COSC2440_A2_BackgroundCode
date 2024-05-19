@@ -1,6 +1,10 @@
 package ViewManager.Provider;
 
 import Models.Claim.Claim;
+import Models.Customer.Customer;
+import Models.Customer.Dependent;
+import Models.Customer.PolicyHolder;
+import Models.Customer.PolicyOwner;
 import Models.Provider.InsuranceSurveyor;
 import OperationManager.Provider.InsuranceSurveyorOperations;
 
@@ -159,7 +163,68 @@ public class InsuranceSurveyorView {
             }
         }
     }
+    private void displayAllPolicyOwners() {
+        List<PolicyOwner> policyOwners = operations.getAllPolicyOwners();
+        for (PolicyOwner policyOwner : policyOwners) {
+            System.out.println(policyOwner);
+        }
+    }
 
+    private void displayAllPolicyHolders() {
+        List<PolicyHolder> policyHolders = operations.getAllPolicyHolders();
+        for (PolicyHolder policyHolder : policyHolders) {
+            System.out.println(policyHolder);
+        }
+    }
+
+    private void displayAllDependents() {
+        List<Dependent> dependents = operations.getAllDependents();
+        for (Dependent dependent : dependents) {
+            System.out.println(dependent);
+        }
+    }
+
+    private void displayCustomerByID(String tableName) {
+        System.out.println("Enter cID: ");
+        String cID = scanner.nextLine();
+        Customer customer = operations.getCustomerByID(cID, tableName);
+        if (customer != null) {
+            System.out.println(customer);
+        } else {
+            System.out.println("Customer not found.");
+        }
+    }
+    public void displayCustomerMenu() {
+        while (true) {
+            System.out.println();
+            System.out.println("1. Retrieve All Policy Owners");
+            System.out.println("2. Retrieve All Policy Holders");
+            System.out.println("3. Retrieve All Dependents");
+            System.out.println("4. Retrieve Policy Owner by cID");
+            System.out.println("5. Retrieve Policy Holder by cID");
+            System.out.println("6. Retrieve Dependent by cID");
+            System.out.println("0. Exit");
+
+            try {
+                int response = Integer.parseInt(scanner.nextLine());
+                switch (response) {
+                    case 1 -> displayAllPolicyOwners();
+                    case 2 -> displayAllPolicyHolders();
+                    case 3 -> displayAllDependents();
+                    case 4 -> displayCustomerByID("policy_owner");
+                    case 5 -> displayCustomerByID("policy_holder");
+                    case 6 -> displayCustomerByID("dependent");
+                    case 0 -> {
+                        System.out.println("Exiting...");
+                        return;
+                    }
+                    default -> System.out.println("Invalid option. Please try again");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid option. Please try again");
+            }
+        }
+    }
     public void displayInsuranceSurveyorMenu() {
         while (true) {
             System.out.println();
@@ -174,6 +239,7 @@ public class InsuranceSurveyorView {
                 int response = Integer.parseInt(scanner.nextLine());
                 switch (response) {
                     case 1 -> displayClaimMenu();
+                    case 2 -> displayCustomerMenu();
                     case 3 -> displayInfo();
                     case 4 -> updatePassword();
                     case 0 -> {

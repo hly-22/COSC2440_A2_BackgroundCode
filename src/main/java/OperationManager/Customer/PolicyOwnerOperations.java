@@ -25,7 +25,7 @@ import java.util.Scanner;
 
 public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
 
-    private PolicyOwner policyOwner;
+    public PolicyOwner policyOwner;
     private DatabaseConnection databaseConnection = new DatabaseConnection("jdbc:postgresql://localhost:5432/postgres", "lyminhhanh", null);
     private CustomerCRUD customerCRUD = new CustomerCRUD(databaseConnection);
     private InsuranceCardCRUD insuranceCardCRUD = new InsuranceCardCRUD(databaseConnection);
@@ -267,50 +267,163 @@ public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
 
     @Override
     public Claim getClaimByID(String fID) {
-        return claimCRUD.readClaim(fID);
+        Claim claim = claimCRUD.readClaim(fID);
+        if (claim != null && claim.getCardNumber().getPolicyOwner().equals(policyOwner.getCID())) {
+            customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": retrieve Claim " + claim.getFID());
+            return claim;
+        }
+        System.out.println("No claim found.");
+        return null;
     }
-
-    @Override
-    public boolean getAllClaimsByCustomer(String cID) {
-        return false;
+    public List<Claim> getAllBeneficiaryClaims(String beneficiaryCID) {
+        // Check if the beneficiaryCID is in the list of beneficiaries
+        if (policyOwner.getBeneficiaries().contains(beneficiaryCID)) {
+            // If beneficiaryCID is in the list, retrieve their claims
+            return claimCRUD.getClaimsByCustomerID(beneficiaryCID);
+        } else {
+            // If beneficiaryCID is not in the list, return an empty list
+            System.out.println("Beneficiary not found in the list of beneficiaries.");
+            return new ArrayList<>();
+        }
     }
 
     @Override
     public List<Claim> getAllClaims() {
         List<Claim> allClaims = new ArrayList<>();
-        allClaims = claimCRUD.getClaimsByCustomerID(policyOwner.getCID());
+        for (String beneCID: policyOwner.getBeneficiaries()) {
+            allClaims.addAll(claimCRUD.getClaimsByCustomerID(beneCID));
+        }
         customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": retrieve all claims");
         return allClaims;
     }
+    public List<Customer> getAllBeneficiaries() {
+        // Get all beneficiaries associated with the policy owner from the database
+        List<Customer> beneficiaries = new ArrayList<>();
+        List<PolicyHolder> policyHolders = customerCRUD.getPolicyHoldersByOwner(policyOwner.getCID());
+        List<Dependent> dependents = customerCRUD.getDependentsByOwner(policyOwner.getCID());
 
-    @Override
-    public boolean updateClaim(String fID, List<Document> documentList, String receiverBankingInfo) {
+        beneficiaries.addAll(policyHolders);
+        beneficiaries.addAll(dependents);
+
+        return beneficiaries;
+    }
+    public Customer getBeneficiaryByID(String cID) {
+        return customerCRUD.getBeneficiaryByID(cID);
+    }
+    public PolicyHolder retrievePolicyholderAndDependents(String cID) {
+        Customer beneficiary = customerCRUD.getBeneficiaryByID(cID);
+        if (beneficiary instanceof PolicyHolder) {
+            return (PolicyHolder) beneficiary;
+        }
+        return null;
+    }
+    public Customer getCustomerByID(String cID) {
+        return customerCRUD.getCustomerByID(cID, "dependent");
+    }
+    public boolean deleteBeneficiary(String policyOwnerCID, String beneficiaryCID) {
+        PolicyOwner policyOwner = (PolicyOwner) customerCRUD.getCustomerByID(policyOwnerCID,"policy_owner");
+        if (policyOwner != null) {
+            List<String> beneficiaries = policyOwner.getBeneficiaries();
+            if (beneficiaries.contains(beneficiaryCID)) {
+                beneficiaries.remove(beneficiaryCID);
+                policyOwner.setBeneficiaries(beneficiaries);
+                customerCRUD.updateBeneficiaries(beneficiaries, policyOwnerCID, beneficiaryCID);
+                return true;
+            }
+        }
         return false;
     }
     @Override
+    public boolean updateClaim(String claimFID, List<Document> newDocuments, String newReceiverBankingInfo) {
+        // Retrieve the claim from the database
+        Claim claim = claimCRUD.readClaim(claimFID);
+
+        if (claim == null) {
+            System.out.println("Claim with FID " + claimFID + " not found.");
+            return false;
+        }
+
+        // Append new documents to the existing list if provided
+        if (newDocuments != null && !newDocuments.isEmpty()) {
+            List<Document> currentDocuments = claim.getDocumentList();
+            currentDocuments.addAll(newDocuments);
+            claim.setDocumentList(currentDocuments);
+        }
+
+        // Update receiver banking info if provided
+        if (newReceiverBankingInfo != null && !newReceiverBankingInfo.isEmpty()) {
+            claim.setReceiverBankingInfo(newReceiverBankingInfo);
+        }
+
+        // Update the claim in the database
+        return claimCRUD.updateClaim(claim);
+    }
+    public boolean updateBeneficiaryClaim(String beneficiaryCID, String claimFID, List<Document> newDocuments, String newReceiverBankingInfo) {
+        // Check if the beneficiaryCID is in the list of beneficiaries
+        if (policyOwner.getBeneficiaries().contains(beneficiaryCID)) {
+            // If beneficiaryCID is in the list, retrieve their claims
+            List<Claim> beneficiaryClaims = claimCRUD.getClaimsByCustomerID(beneficiaryCID);
+            // Check if the claimFID is in the list of claims for the beneficiary
+            for (Claim claim : beneficiaryClaims) {
+                if (claim.getFID().equals(claimFID)) {
+                    return updateClaim(claimFID, newDocuments, newReceiverBankingInfo);
+                }
+            }
+            // If claimFID is not found for the beneficiary, print a message
+            System.out.println("Claim with FID " + claimFID + " not found for beneficiary with CID " + beneficiaryCID);
+            return false;
+        } else {
+            // If beneficiaryCID is not in the list, print a message
+            System.out.println("Beneficiary with CID " + beneficiaryCID + " not found in the list of beneficiaries.");
+            return false;
+        }
+    }
+    @Override
     public boolean deleteClaim(String fID) {
+        Claim claim = claimCRUD.readClaim(fID);
+        if (claim != null && claim.getCardNumber().getPolicyOwner().equals(policyOwner.getCID())) {
+            customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": delete Claim " + fID);
+            return claimCRUD.deleteClaim(fID);
+        }
+        System.out.println("Claim does not exist.");
         return false;
     }
 
     // methods relating to user information
     @Override
     public void displayInfo() {
-
+        PolicyOwner policyOwnerInfo = customerCRUD.readPolicyOwner(policyOwner.getCID());
+        System.out.println(policyOwnerInfo);
+        customerCRUD.updatePolicyHolderActionHistory(policyOwner.getCID(), LocalDate.now() + "retrieve information");
     }
-
     @Override
     public boolean updatePhone(String newPhone) {
         return customerCRUD.updateCustomerContactInfo("policy_owner", policyOwner.getCID(), newPhone, "phone");
+    }
+    public boolean updateBeneficiaryPhone(String cID, String newPhone) {
+        return customerCRUD.updateCustomerContactInfo("customer", cID, newPhone, "phone");
     }
 
     @Override
     public boolean updateAddress(String newAddress) {
         return customerCRUD.updateCustomerContactInfo("policy_owner", policyOwner.getCID(), newAddress, "address");
     }
+    public boolean updateBeneficiaryAddress(String cID, String newAddress) {
+        return customerCRUD.updateCustomerContactInfo("policy_owner", cID, newAddress, "address");
+    }
 
     @Override
     public boolean updateEmail(String newEmail) {
         return customerCRUD.updateCustomerContactInfo("policy_owner", policyOwner.getCID(), newEmail, "email");
+    }
+    public boolean updateBeneficiaryEmail(String cID, String newEmail) {
+        return customerCRUD.updateCustomerContactInfo("policy_owner", cID, newEmail, "email");
+    }
+    public boolean updateBeneficiaryInfo(String beneficiaryCID, String phone, String address, String email) {
+        if (updateBeneficiaryPhone(beneficiaryCID, phone) && updateBeneficiaryAddress(beneficiaryCID, address) && updateBeneficiaryEmail(beneficiaryCID, email)) {
+            return true;
+        }
+        return false;
     }
     @Override
     public boolean updatePassword() {
@@ -338,5 +451,46 @@ public class PolicyOwnerOperations implements UserInfoDAO, CustomerClaimDAO {
         System.out.println("Password updated successfully.");
         customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": update password");
         return false;
+    }
+    public void updateBeneficiaryPassword() {
+        // First, retrieve the list of beneficiaries for the policy owner
+        List<String> beneficiaries = policyOwner.getBeneficiaries();
+
+        // Ask for the dependent's CID
+        System.out.println("Enter the beneficiary's CID: ");
+        String beneficiaryCID = scanner.nextLine().trim();
+
+        // Check if the provided dependent CID is in the list of dependents
+        if (!beneficiaries.contains(beneficiaryCID)) {
+            System.out.println("The provided CID does not belong to any of your beneficiaries.");
+            return;
+        }
+
+        // Ask for current password
+        System.out.print("Enter current password: ");
+        String currentPassword = scanner.nextLine();
+
+        // Retrieve the hashed password from the database based on the dependent's CID
+        String hashedPasswordFromDB = customerCRUD.getHashedPasswordFromDB(beneficiaryCID);
+
+        // Check if the current password matches the hashed password from the database
+        if (!InputChecker.checkPassword(currentPassword, hashedPasswordFromDB)) {
+            System.out.println("Invalid current password. Password not updated.");
+            return;
+        }
+
+        // Ask for new password
+        System.out.print("Enter new password: ");
+        String newPassword = scanner.nextLine();
+
+        // Hash the new password before storing it in the database
+        String hashedNewPassword = InputChecker.hashPassword(newPassword);
+        customerCRUD.updatePasswordInDB(beneficiaryCID, hashedNewPassword);
+
+        System.out.println("Password updated successfully for the beneficiary.");
+        customerCRUD.updatePolicyOwnerActionHistory(policyOwner.getCID(), LocalDate.now() + ": update password for Beneficiary " + beneficiaryCID);
+    }
+    public void updateActionHistory(String action) {
+        customerCRUD.updatePolicyHolderActionHistory(policyOwner.getCID(), LocalDate.now() + action);
     }
 }

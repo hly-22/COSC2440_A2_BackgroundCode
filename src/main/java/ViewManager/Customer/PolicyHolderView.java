@@ -237,7 +237,7 @@ public class PolicyHolderView {
         }
     }
     public void retrieveAllClaims() {
-        operations.getAllClaims();
+        System.out.println(operations.getAllClaims());
     }
     public void addClaim() {
         operations.addClaim(operations.policyHolder.getInsuranceCardNumber());
@@ -291,10 +291,8 @@ public class PolicyHolderView {
         }
 
         // Ask for new receiver banking info
-        System.out.print("Enter new receiver banking info (press enter to keep existing): ");
-
         System.out.println("Enter new receiver banking information in the following format:");
-        System.out.println("bank, name, number (press enter to skip");
+        System.out.println("bank, name, number (press enter to skip)");
 
         String newReceiverBankingInfo = null;
         while (true) {

@@ -177,6 +177,20 @@ public class CustomerCRUD {
             throw new RuntimeException(e);
         }
     }
+    public boolean updateBeneficiaries(List<String> beneficiaries, String policyOwnerCID, String beneficiaryCID) {
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement("UPDATE policy_owner SET beneficiaries = ? WHERE c_id = ?")) {
+            Array beneficiariesArray = conn.createArrayOf("varchar", beneficiaries.toArray());
+            pstmt.setArray(1, beneficiariesArray);
+            pstmt.setString(2, policyOwnerCID);
+            pstmt.executeUpdate();
+            System.out.println("Beneficiary with CID " + beneficiaryCID + " removed from the beneficiaries list.");
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error removing beneficiary from beneficiaries list", e);
+        }
+    }
     public List<String> getBeneficiaries(String policyOwnerCID) {
         List<String> beneficiaries = new ArrayList<>();
         String sql = "SELECT beneficiaries FROM policy_owner WHERE c_id = ?";
@@ -223,6 +237,41 @@ public class CustomerCRUD {
             System.out.println("Beneficiary with CID " + beneficiaryCID + " is not in the beneficiaries list.");
             return false;
         }
+    }
+    public List<PolicyHolder> getPolicyHoldersByOwner(String ownerCID) {
+        List<PolicyHolder> policyHolders = new ArrayList<>();
+        String sql = "SELECT * FROM policy_holder WHERE policy_owner = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, ownerCID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    PolicyHolder policyHolder = (PolicyHolder) extractCustomerFromResultSet(rs,"policy_holder");
+                    policyHolders.add(policyHolder);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving policy holders by owner", e);
+        }
+        return policyHolders;
+    }
+
+    public List<Dependent> getDependentsByOwner(String ownerCID) {
+        List<Dependent> dependents = new ArrayList<>();
+        String sql = "SELECT * FROM dependent WHERE policy_owner = ?";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, ownerCID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Dependent dependent = (Dependent) extractCustomerFromResultSet(rs, "dependent");
+                    dependents.add(dependent);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving dependents by owner", e);
+        }
+        return dependents;
     }
     public String getPolicyOwnerFromDependent(String cID) {
         String policyOwnerCID = null;
@@ -971,6 +1020,20 @@ public class CustomerCRUD {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error updating password in the database", e);
+        }
+    }
+    public Customer getBeneficiaryByID(String cID) {
+        PolicyHolder policyHolder = getPolicyHolder(cID);
+        if (policyHolder != null) {
+            return policyHolder;
+        } else {
+            Dependent dependent = readDependent(cID);
+            if (dependent != null) {
+                return dependent;
+            } else {
+                System.out.println("No beneficiary found with cID: " + cID);
+                return null;
+            }
         }
     }
     public Customer getCustomerByID(String cID, String tableName) {
