@@ -10,6 +10,7 @@ import Models.SystemAdmin.SystemAdmin;
 import OperationManager.SystemAdmin.SystemAdminOperations;
 import OperationManager.Utils.InputChecker;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
@@ -379,6 +380,10 @@ public class SystemAdminView {
     public void updatePassword() {
         operations.updateAdminPassword();
     }
+    public void displaySumOfClaimedAmounts() {
+        System.out.println("Sum of successfully claimed amounts: " + operations.getSumOfClaimedAmounts());
+    }
+
     public void displayAdminMenu () {
 
         while (true) {
@@ -408,6 +413,7 @@ public class SystemAdminView {
             System.out.println("22. Retrieve All Claims");
             System.out.println("23. Retrieve All Claims of cID");
             System.out.println("24. Update Password");
+            System.out.println("25. Sum of All Claimed Amount");
             System.out.println("0. Logout");
 
             try {
@@ -437,6 +443,7 @@ public class SystemAdminView {
                     case 22 -> getAllClaims();
                     case 23 -> getClaimsByCustomerID();
                     case 24 -> updatePassword();
+                    case 25 -> displaySumOfClaimedAmounts();
                     case 0 -> {
                         System.out.println("Exiting...");
                         return;

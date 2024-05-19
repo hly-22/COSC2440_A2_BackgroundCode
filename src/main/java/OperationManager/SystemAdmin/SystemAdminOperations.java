@@ -470,4 +470,7 @@ public class SystemAdminOperations {
     public List<Claim> getClaimsByCustomerID(String cID) {
         return claimCRUD.getClaimsByCustomerID(cID);
     }
+    public BigDecimal getSumOfClaimedAmounts() {
+        return claimCRUD.calculateSumOfClaimedAmounts();
+    }
 }

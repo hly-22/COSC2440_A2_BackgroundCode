@@ -395,5 +395,19 @@ public class ClaimCRUD {
         }
         return false;
     }
+    public BigDecimal calculateSumOfClaimedAmounts() {
+        String sql = "SELECT SUM(claim_amount) FROM claim WHERE status = 'APPROVED'";
+        try (Connection conn = databaseConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getBigDecimal(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO; // Return zero if no sum is found
+    }
+
 
 }
